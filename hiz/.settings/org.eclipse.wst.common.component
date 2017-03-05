@@ -2,9 +2,6 @@
     <wb-module deploy-name="hiz">
         <wb-resource deploy-path="/" source-path="/WebContent"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/JavaSource"/>
-        <dependent-module archiveName="affinityWebServices.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/affinityWebServices/affinityWebServices">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/hiz-model/hiz-model">
             <dependency-type>uses</dependency-type>
         </dependent-module>

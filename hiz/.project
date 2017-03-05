@@ -3,7 +3,6 @@
 	<name>hiz</name>
 	<comment></comment>
 	<projects>
-		<project>affinityWebServices</project>
 		<project>hiz-model</project>
 	</projects>
 	<buildSpec>
