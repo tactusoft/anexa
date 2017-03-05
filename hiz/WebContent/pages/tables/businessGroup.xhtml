@@ -1,0 +1,126 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:600px;"
+			header="#{msg['title_business_group']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:toolbar id="toolBar" style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_new']}" icon="ui-icon-document"
+							action="#{businessGroupBacking.newAction}"
+							oncomplete="dlg.show()" update=":editForm:pnlDetail" />
+						<p:commandButton value="#{msg['btn_edit']}" icon="ui-icon-pencil"
+							action="#{businessGroupBacking.refreshDetailAction}"
+							oncomplete="dlg.show()"
+							update=":editForm:pnlDetail :editForm:pnlDetailDetail"
+							disabled="#{empty businessGroupBacking.list or businessGroupBacking.selected.id==null} " />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<p:dataTable id="recordTable" var="rec"
+					value="#{businessGroupBacking.model}" rowKey="#{rec.id}"
+					selection="#{businessGroupBacking.selected}" paginator="true"
+					rows="10" style="width:100%">
+
+					<p:column selectionMode="single" style="width:18px" />
+
+					<p:column headerText="#{msg['pro_code']}">
+						<h:outputLabel value="#{rec.name}" />
+					</p:column>
+
+					<p:column headerText="#{msg['spc_description']}">
+						<h:outputLabel value="#{rec.description}" />
+					</p:column>
+
+					<p:column headerText="#{msg['glb_state']}">
+						<h:outputLabel
+							value="#{rec.status==1?msg['glb_state_active']:msg['glb_state_inactive']}" />
+					</p:column>
+
+				</p:dataTable>
+
+			</h:form>
+
+		</p:panel>
+
+		<h:form id="editForm">
+
+			<p:growl id="growl" showDetail="true" />
+
+			<p:dialog header="#{msg['msg_detail']}" widgetVar="dlg"
+				resizable="false" id="dialog" showEffect="fade" hideEffect="explode"
+				modal="true" width="500">
+
+				<p:ajax event="close" update=":form:toolBar"
+					listener="#{businessGroupBacking.handleClose}" />
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_save']}" icon="ui-icon-disk"
+							action="#{businessGroupBacking.saveAction}"
+							update="growl :form:recordTable :form:toolBar"
+							oncomplete="dlg.hide()" />
+						<p:commandButton value="#{msg['btn_close']}"
+							icon="ui-icon-closethick" update="growl :form:recordTable"
+							process="@none" oncomplete="dlg.hide()" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<h:panelGrid id="pnlDetail" columns="2" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+
+					<h:outputLabel value="#{msg['pro_code']}" />
+					<h:inputText value="#{businessGroupBacking.selected.name}"
+						style="width:100%" label="#{msg['pro_code']}" required="true" />
+
+					<h:outputLabel value="#{msg['spc_description']}" />
+					<h:inputText value="#{businessGroupBacking.selected.description}"
+						style="width:100%" label="#{msg['spc_description']}"
+						required="true" />
+
+					<h:outputLabel value="#{msg['glb_state']}"
+						rendered="#{businessGroupBacking.selected.id!=null?true:false}" />
+					<p:selectOneMenu value="#{businessGroupBacking.selected.status}"
+						style="width:250px"
+						rendered="#{businessGroupBacking.selected.id!=null?true:false}">
+						<f:selectItem itemValue="1" itemLabel="#{msg['glb_state_active']}" />
+						<f:selectItem itemValue="0"
+							itemLabel="#{msg['glb_state_inactive']}" />
+					</p:selectOneMenu>
+				</h:panelGrid>
+
+				<h:panelGrid id="pnlDetailDetail" columns="1" style="margin:0 auto;"
+					width="100%">
+					<p:pickList var="row" value="#{businessGroupBacking.listDetail}"
+						converter="branchConverter" itemValue="#{row}"
+						itemLabel="#{row.name} (#{row.society})" showSourceFilter="true"
+						showTargetFilter="true" filterMatchMode="contains" required="true"
+						label="#{msg['usr_branch']}">
+
+						<f:facet name="sourceCaption">#{msg['usr_branch']}</f:facet>
+						<f:facet name="targetCaption">#{msg['glb_target_caption']}</f:facet>
+					</p:pickList>
+				</h:panelGrid>
+
+			</p:dialog>
+		</h:form>
+
+	</ui:define>
+</ui:composition>
+</html>

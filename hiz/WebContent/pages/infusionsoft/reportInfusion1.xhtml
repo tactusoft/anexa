@@ -1,0 +1,157 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:1150px;height:100%;"
+			header="#{msg['title_infunsion_1']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:growl id="growl" showDetail="true" />
+
+				<p:toolbar id="toolbar" style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton id="btnSearch" value="#{msg['btn_search']}"
+							icon="ui-icon-search" update="recordTable toolbar growl"
+							actionListener="#{reportInfusion1Backing.searchAction}" />
+						<p:commandButton id="btnExport" oncomplete="exportDlg.show();"
+							value="#{msg['btn_export']}" icon="ui-icon-disk"
+							disabled="#{empty reportInfusion1Backing.list}" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="5" />
+
+				<h:panelGrid id="pnlDetail" columns="2" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+
+					<h:outputLabel value="#{msg['app_state']}" style="width:40%" />
+					<p:selectCheckboxMenu value="#{reportInfusion1Backing.listStatus}"
+						label="#{msg['app_state']}" filter="true"
+						filterMatchMode="contains" panelStyle="width:350px"
+						style="width:350px;">
+						<f:selectItem itemLabel="Sin cita" itemValue="2" />
+						<f:selectItem itemLabel="Con cita" itemValue="1" />
+					</p:selectCheckboxMenu>
+
+					<h:outputLabel value="#{msg['src_star_date']}" style="width:40%" />
+					<p:calendar value="#{reportInfusion1Backing.startDate}"
+						required="true" label="#{msg['src_star_date']}"
+						readonlyInput="true" pattern="dd/MM/yyyy" showOn="button"
+						navigator="true" locale="es" />
+
+					<h:outputLabel value="#{msg['src_end_date']}" style="width:40%" />
+					<p:calendar value="#{reportInfusion1Backing.endDate}"
+						required="true" label="#{msg['src_end_date']}"
+						readonlyInput="true" pattern="dd/MM/yyyy" showOn="button"
+						navigator="true" locale="es" />
+				</h:panelGrid>
+
+				<p:spacer height="5" />
+
+				<p:dataTable id="recordTable" var="rec"
+					value="#{reportInfusion1Backing.list}" paginator="true" rows="20"
+					style="width:100%" emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column filterBy="phone" filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['pat_send_phone']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.phone}" />
+					</p:column>
+
+					<p:column filterBy="names" filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['doc_names']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.names}" />
+					</p:column>
+
+					<p:column filterBy="email" filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['pat_email']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.email}" />
+					</p:column>
+
+					<p:column filterBy="eventDate" filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['vw_created_date']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.eventDate}">
+						</h:outputLabel>
+					</p:column>
+
+					<p:column
+						filterBy="#{rec.status eq 0?'Sin Procesar':rec.status eq 1?'Con cita':'Sin Cita'}"
+						filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['app_state']}" />
+						</f:facet>
+						<h:outputLabel
+							value="#{rec.status eq 0?'Sin Procesar':rec.status eq 1?'Con cita':'Sin Cita'}" />
+					</p:column>
+
+					<p:column filterBy="disease" filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['rep_disease']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.disease}" />
+					</p:column>
+
+				</p:dataTable>
+
+				<p:dialog id="exportDialog" widgetVar="exportDlg" modal="true"
+					closable="true" header="#{msg['btn_export']}">
+
+					<h:outputLabel value="#{msg['app_src_format']}"
+						style="font-size:medium;" />
+
+					<h:panelGrid width="100%" columns="4">
+
+						<h:commandLink>
+							<p:graphicImage id="imgExcel" value="../../images/excel.png"
+								alt="Excel" />
+							<p:dataExporter type="xls" target="recordTable" fileName="export" />
+							<p:tooltip for="imgExcel" value="#{msg['btn_export_excel']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+						<h:commandLink>
+							<p:graphicImage id="imgCSV" value="../../images/csv.png" />
+							<p:dataExporter type="csv" target="recordTable" fileName="export" />
+							<p:tooltip for="imgCSV" value="#{msg['btn_export_csv']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+						<h:commandLink>
+							<p:graphicImage id="imgXML" value="../../images/xml.png" />
+							<p:dataExporter type="xml" target="recordTable" fileName="export" />
+							<p:tooltip for="imgXML" value="#{msg['btn_export_xml']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+						<h:commandLink action="#{reportInfusion1Backing.exportElastix}">
+							<p:graphicImage id="imgElastix" value="../../images/elastix.png" />
+							<p:tooltip for="imgElastix" value="#{msg['btn_export_elastix']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+					</h:panelGrid>
+				</p:dialog>
+
+			</h:form>
+		</p:panel>
+
+	</ui:define>
+</ui:composition>
+</html>

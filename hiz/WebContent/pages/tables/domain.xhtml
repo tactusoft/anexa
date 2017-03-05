@@ -1,0 +1,115 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:100%;"
+			header="#{msg['title_domain']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_new']}" icon="ui-icon-document"
+							action="#{domainBacking.newAction}" oncomplete="dlg.show()"
+							update=":editForm:pnlDetail" />
+						<p:commandButton value="#{msg['btn_edit']}" icon="ui-icon-pencil"
+							oncomplete="dlg.show()" update=":editForm:pnlDetail" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<p:dataTable id="recordTable" var="rec"
+					value="#{domainBacking.model}" rowKey="#{rec.id}"
+					selection="#{domainBacking.selected}" paginator="true" rows="15"
+					style="width:100%">
+
+					<p:column selectionMode="single" style="width:18px" />
+
+					<p:column headerText="#{msg['dom_code']}" filterBy="code"
+						filterMatchMode="contains">
+						<h:outputLabel value="#{rec.code}" />
+					</p:column>
+
+					<p:column headerText="#{msg['dom_value']}">
+						<h:outputLabel value="#{rec.itemValue}" />
+					</p:column>
+
+					<p:column headerText="#{msg['dom_group']}" filterBy="groupBy"
+						filterMatchMode="contains">
+						<h:outputLabel value="#{rec.groupBy}" />
+					</p:column>
+				</p:dataTable>
+
+			</h:form>
+
+		</p:panel>
+
+		<h:form id="editForm">
+
+			<p:growl id="growl" showDetail="true" />
+
+			<p:dialog header="#{msg['msg_detail']}" widgetVar="dlg"
+				resizable="false" id="dialog" showEffect="fade" hideEffect="explode"
+				modal="true" width="500">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_save']}" icon="ui-icon-disk"
+							action="#{domainBacking.saveAction}"
+							update="growl :form:recordTable"
+							oncomplete="handleNoteComplete(xhr, status, args)" />
+						<p:commandButton value="#{msg['btn_close']}"
+							icon="ui-icon-closethick" update="growl :form:recordTable"
+							process="@none" oncomplete="dlg.hide()" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<h:panelGrid id="pnlDetail" columns="2" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+
+					<h:outputLabel value="#{msg['dom_code']}" />
+					<h:inputText value="#{domainBacking.selected.code}"
+						style="width:100%" label="#{msg['dom_code']}" required="true" />
+
+					<h:outputLabel value="#{msg['dom_value']}" />
+					<h:inputText value="#{domainBacking.selected.itemValue}"
+						style="width:100%" />
+
+					<h:outputLabel value="#{msg['dom_group']}" />
+					<p:selectOneMenu value="#{domainBacking.selected.groupBy}"
+						style="width:100%">
+						<f:selectItems value="#{domainBacking.listGroup}" />
+					</p:selectOneMenu>
+
+				</h:panelGrid>
+
+			</p:dialog>
+		</h:form>
+
+		<script type="text/javascript">
+			function handleNoteComplete(xhr, status, args) {
+				if (args.validationFailed || !args.validate) {
+					jQuery('dialog').effect("shake", {
+						times : 3
+					}, 100);
+				} else {
+					dlg.hide();
+				}
+			}
+		</script>
+
+	</ui:define>
+</ui:composition>
+</html>

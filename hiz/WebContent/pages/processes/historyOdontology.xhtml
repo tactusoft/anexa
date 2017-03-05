@@ -1,0 +1,1694 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:100%;"
+			header="#{msg['title_view_history_odo']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:growl id="growl" showDetail="true" />
+
+				<p:toolbar id="toolBarPatient" style="width:100%"
+					rendered="#{historyOdontologyBacking.modeHistorial}">
+					<p:toolbarGroup align="left">
+						<p:commandButton icon="ui-icon-arrowreturnthick-1-w"
+							value="#{msg['btn_return']}"
+							action="#{historyOdontologyBacking.returnAction}"
+							rendered="#{historyOdontologyBacking.modeHistorial}"
+							immediate="true">
+							<f:setPropertyActionListener value="false"
+								target="#{historyOdontologyBacking.modeEdit}" />
+						</p:commandButton>
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer rendered="#{historyOdontologyBacking.modeHistorial}" />
+
+				<!-- TACTU CITAS -->
+				<h:panelGrid id="tblPart" columns="1" width="100%"
+					rendered="#{historyOdontologyBacking.modeEdit}">
+
+					<p:toolbar id="toolBar" style="width:100%"
+						rendered="#{not historyOdontologyBacking.modeHistorial}">
+						<p:toolbarGroup align="left">
+							<p:commandButton icon="ui-icon-disk" value="#{msg['btn_save']}"
+								update="form"
+								actionListener="#{historyOdontologyBacking.saveAction}"
+								disabled="#{historyOdontologyBacking.currentAppointment.closeAppointment}"
+								process="@this, toolBar, accordion"
+								oncomplete="loadOdontogram();" />
+							<p:commandButton value="#{msg['btn_close_appointment']}"
+								icon="ui-icon-locked" onclick="confirmation.show()"
+								disabled="#{historyOdontologyBacking.currentAppointment.closeAppointment}"
+								process="@this, accordion"
+								rendered="#{historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}" />
+							<p:commandButton icon="ui-icon-bookmark"
+								value="#{msg['btn_view_history']}" update="form"
+								oncomplete="dlgHistorial.show()"
+								process="@this, toolBar, accordion" />
+							<p:commandButton
+								disabled="#{not historyOdontologyBacking.currentAppointment.closeAppointment}"
+								icon="ui-icon-print"
+								rendered="#{historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}"
+								value="#{msg['btn_print_medication']}" ajax="false"
+								action="#{historyOdontologyBacking.printFormulaAction}"
+								process="@this,toolBar" />
+							<p:commandButton icon="ui-icon-arrowreturnthick-1-w"
+								value="#{msg['btn_return']}" update="form"
+								process="@this, toolBar, accordion" immediate="true"
+								action="#{historyOdontologyBacking.returnAction}" />
+						</p:toolbarGroup>
+					</p:toolbar>
+
+					<p:spacer rendered="#{not historyOdontologyBacking.modeHistorial}" />
+
+					<p:panelGrid id="pnlPatient" columns="4" style="width:100%">
+
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['pat']}" />
+						</f:facet>
+
+						<h:outputLabel value="#{msg['pat_sap_code']}"
+							rendered="#{historyOdontologyBacking.selectedPatient.id eq null?false:true}" />
+						<p:inputText
+							value="#{historyOdontologyBacking.selectedPatient.codeSap}"
+							style="width:400px;background-color:#FFFF80;font-weight:bold;"
+							readonly="true"
+							rendered="#{historyOdontologyBacking.selectedPatient.id eq null?false:true}" />
+
+						<h:outputLabel value="#{msg['pat_code']}"
+							rendered="#{historyOdontologyBacking.selectedPatient.id eq null?false:true}" />
+						<p:inputText
+							value="#{historyOdontologyBacking.selectedPatient.doc}"
+							style="width:400px;background-color:#FFFF80;font-weight:bold;"
+							readonly="true"
+							rendered="#{historyOdontologyBacking.selectedPatient.id eq null?false:true}" />
+
+						<h:outputLabel value="#{msg['pat_names']}"
+							rendered="#{historyOdontologyBacking.selectedPatient.id eq null?false:true}" />
+						<p:inputText
+							value="#{historyOdontologyBacking.selectedPatient.names}"
+							style="width:400px;background-color:#FFFF80;font-weight:bold;"
+							readonly="true"
+							rendered="#{historyOdontologyBacking.selectedPatient.id eq null?false:true}" />
+
+						<h:outputLabel value="#{msg['glb_gender']}"
+							rendered="#{historyOdontologyBacking.selectedPatient.id eq null?false:true}" />
+						<p:inputText
+							style="width:400px;background-color:#FFFF80;font-weight:bold;"
+							readonly="true"
+							rendered="#{historyOdontologyBacking.selectedPatient.id eq null?false:true}"
+							value="#{historyOdontologyBacking.selectedPatient.gender eq 'W'?msg['glb_gender_woman']:historyOdontologyBacking.selectedPatient.gender eq 'M'?msg['glb_gender_man']:''}" />
+
+					</p:panelGrid>
+
+					<p:spacer />
+
+					<p:accordionPanel id="accordion" style="width:1100px;height:100%"
+						activeIndex="#{historyOdontologyBacking.activeIndex}"
+						rendered="#{not historyOdontologyBacking.modeHistorial}">
+
+						<!--  <p:ajax event="tabChange"
+							listener="#{historyOdontologyBacking.handleTabChange}"
+							update=":form:accordion:pnlStudyCase" />-->
+
+						<p:tab title="#{msg['title_patient_complementary']}"
+							id="PATIENT_COMPLEMENTARY"
+							rendered="#{historyOdontologyBacking.renderedTab}">
+
+							<p:fieldset legend="#{msg['pat_personal_data']}">
+								<h:panelGrid id="pnlDetail" columns="4" style="margin:0 auto;"
+									width="100%">
+
+									<h:outputLabel value="#{msg['pat_born_date']}" />
+									<p:calendar
+										value="#{historyOdontologyBacking.selectedPatient.bornDate}"
+										label="#{msg['pat_born_date']}" readonlyInput="true"
+										pattern="dd/MM/yyyy" showOn="button" navigator="true"
+										locale="es" yearRange="-100:+0"
+										maxdate="#{historyOdontologyBacking.maxDate}">
+										<p:ajax event="dateSelect"
+											listener="#{historyOdontologyBacking.handleBornDateSelect}"
+											update="txtAge" />
+									</p:calendar>
+
+									<h:outputLabel value="#{msg['pat_age']}" />
+									<p:inputText id="txtAge"
+										style="width:400px;background-color:#FFFF80;font-weight:bold;"
+										readonly="true"
+										value="#{historyOdontologyBacking.age} #{msg['glb_age']}" />
+
+									<h:outputLabel value="#{msg['pat_occupation']}" />
+									<p:selectOneMenu
+										value="#{historyOdontologyBacking.idOccupation}"
+										style="width:408px" label="#{msg['pat_occupation']}">
+										<f:selectItems
+											value="#{historyOdontologyBacking.listOccupation}" />
+									</p:selectOneMenu>
+
+									<h:outputLabel value="#{msg['pat_neighborhood']}" />
+									<p:inputText style="width:400px"
+										label="#{msg['pat_neighborhood']}"
+										value="#{historyOdontologyBacking.neighborhood}" />
+
+									<h:outputLabel value="#{msg['pat_type_housing']}" />
+									<p:selectOneMenu
+										value="#{historyOdontologyBacking.typeHousing}"
+										style="width:408px" label="#{msg['pat_type_housing']}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											itemValue="" />
+										<f:selectItem itemLabel="#{msg['pat_type_housing_u']}"
+											itemValue="U" />
+										<f:selectItem itemLabel="#{msg['pat_type_housing_r']}"
+											itemValue="R" />
+									</p:selectOneMenu>
+
+								</h:panelGrid>
+							</p:fieldset>
+
+							<p:spacer height="8" />
+
+							<p:fieldset legend="#{msg['pat_guardian_data']}">
+								<h:panelGrid id="pnlDetail2" columns="4" style="margin:0 auto;"
+									width="100%">
+
+									<h:outputLabel value="#{msg['pat_guardian']}" />
+									<p:inputText
+										value="#{historyOdontologyBacking.selectedPatient.guardian}"
+										style="width:400px" label="#{msg['pat_guardian']}"
+										maxlength="255" />
+
+									<h:outputLabel value="#{msg['pat_guardian_address']}" />
+									<p:inputText
+										value="#{historyOdontologyBacking.selectedPatient.guardianAddress}"
+										style="width:400px" label="#{msg['pat_guardian_address']}"
+										maxlength="255" />
+
+									<h:outputLabel value="#{msg['pat_guardian_relationship']}" />
+									<p:selectOneMenu style="width:408px"
+										value="#{historyOdontologyBacking.selectedPatient.idGuardianType}">
+										<f:selectItems value="#{historyOdontologyBacking.listKin}" />
+									</p:selectOneMenu>
+
+									<h:outputLabel value="#{msg['pat_guardian_telephone']}" />
+									<p:inputText
+										value="#{historyOdontologyBacking.selectedPatient.guardianTelephone}"
+										style="width:400px" label="#{msg['pat_guardian_telephone']}"
+										maxlength="30" />
+
+								</h:panelGrid>
+							</p:fieldset>
+
+						</p:tab>
+
+						<p:tab title="#{msg['his_history_history']}" id="HISTORY"
+							rendered="#{historyOdontologyBacking.renderedTab}">
+
+							<h:panelGrid id="pnlHistory" columns="1" width="100%"
+								cellpadding="10">
+
+								<h:outputText value="#{msg['his_history_reason']}" />
+								<p:inputTextarea style="width:1050px" rows="5"
+									value="#{historyOdontologyBacking.selectedHistoryHistory.reason}" />
+
+								<h:outputText value="#{msg['his_history_disease']}" />
+								<p:inputTextarea style="width:1050px" rows="5"
+									value="#{historyOdontologyBacking.selectedHistoryHistory.disease}" />
+
+								<h:outputText value="#{msg['his_history_results']}" />
+								<p:inputTextarea style="width:1050px" rows="5"
+									value="#{historyOdontologyBacking.selectedHistoryHistory.results}" />
+
+								<p:spacer height="10" />
+
+								<p:panelGrid columns="2" style="width:100%"
+									columnClasses="width25per,width75per">
+
+									<f:facet name="header">
+										<h:outputLabel value="#{msg['his_history_review']}" />
+									</f:facet>
+
+									<h:outputLabel value="#{msg['his_history_head']}" />
+									<p:inputTextarea style="width:750px"
+										value="#{historyOdontologyBacking.selectedHistoryHistory.head}" />
+
+									<h:outputLabel value="#{msg['his_history_orl']}" />
+									<p:inputTextarea style="width:750px"
+										value="#{historyOdontologyBacking.selectedHistoryHistory.orl}" />
+
+									<h:outputLabel value="#{msg['his_history_cr']}" />
+									<p:inputTextarea style="width:750px"
+										value="#{historyOdontologyBacking.selectedHistoryHistory.cr}" />
+
+									<h:outputLabel value="#{msg['his_history_gi']}" />
+									<p:inputTextarea style="width:750px"
+										value="#{historyOdontologyBacking.selectedHistoryHistory.gi}" />
+
+									<h:outputLabel value="#{msg['his_history_neuromuscular']}" />
+									<p:inputTextarea style="width:750px"
+										value="#{historyOdontologyBacking.selectedHistoryHistory.neuromuscular}" />
+
+									<h:outputLabel value="#{msg['his_history_gu']}" />
+									<p:inputTextarea style="width:750px"
+										value="#{historyOdontologyBacking.selectedHistoryHistory.gu}" />
+
+									<h:outputLabel value="#{msg['his_history_psychiatric']}" />
+									<p:inputTextarea style="width:750px"
+										value="#{historyOdontologyBacking.selectedHistoryHistory.psychiatric}" />
+
+									<h:outputLabel value="#{msg['his_history_skin']}" />
+									<p:inputTextarea style="width:750px"
+										value="#{historyOdontologyBacking.selectedHistoryHistory.skin}" />
+								</p:panelGrid>
+
+							</h:panelGrid>
+
+						</p:tab>
+
+						<p:tab title="#{msg['his_history_record']}" id="RECORD"
+							rendered="#{historyOdontologyBacking.renderedTab}">
+							<p:fieldset legend="#{msg['his_record_personal']}">
+								<h:panelGrid id="pnlPersonal" columns="3" width="100%">
+
+									<p:selectBooleanCheckbox
+										value="#{historyOdontologyBacking.selectedHistoryRecord.arthritis}"
+										itemLabel="#{msg['his_rec_per_arthritis']}">
+										<p:ajax update="txtPersonal1 txtPersonal2" />
+									</p:selectBooleanCheckbox>
+
+									<p:inputTextarea id="txtPersonal1" style="width:300px" rows="3"
+										label="#{msg['his_record_clic_time']}"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.arthritis}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.arthritisTime}" />
+
+									<p:inputTextarea id="txtPersonal2" style="width:450px" rows="3"
+										label="#{msg['his_record_clic_medi']}"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.arthritis}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.arthritisMedication}" />
+
+									<p:selectBooleanCheckbox
+										value="#{historyOdontologyBacking.selectedHistoryRecord.cancer}"
+										itemLabel="#{msg['his_rec_per_cancer']}">
+										<p:ajax update="txtPersonal3 txtPersonal4" />
+									</p:selectBooleanCheckbox>
+
+									<p:inputTextarea id="txtPersonal3" style="width:300px" rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.cancer}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.cancerTime}" />
+
+									<p:inputTextarea id="txtPersonal4" style="width:450px" rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.cancer}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.cancerMedication}" />
+
+									<p:selectBooleanCheckbox
+										value="#{historyOdontologyBacking.selectedHistoryRecord.pulmonary}"
+										itemLabel="#{msg['his_rec_per_pulmonary']}">
+										<p:ajax update="txtPersonal5 txtPersonal6" />
+									</p:selectBooleanCheckbox>
+
+									<p:inputTextarea id="txtPersonal5" style="width:300px" rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.pulmonary}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.pulmonaryTime}" />
+
+									<p:inputTextarea id="txtPersonal6" style="width:450px" rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.pulmonary}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.pulmonaryMedication}" />
+
+									<p:selectBooleanCheckbox
+										value="#{historyOdontologyBacking.selectedHistoryRecord.diabetes}"
+										itemLabel="#{msg['his_rec_per_diabetes']}">
+										<p:ajax update="txtPersonal7 txtPersonal8" />
+									</p:selectBooleanCheckbox>
+
+									<p:inputTextarea id="txtPersonal7" style="width:300px" rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.diabetes}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.diabetesTime}" />
+
+									<p:inputTextarea id="txtPersonal8" style="width:450px" rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.diabetes}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.diabetesMedication}" />
+
+									<p:selectBooleanCheckbox
+										value="#{historyOdontologyBacking.selectedHistoryRecord.hypertension}"
+										itemLabel="#{msg['his_rec_per_hypertension']}">
+										<p:ajax update="txtPersonal9 txtPersonal10" />
+									</p:selectBooleanCheckbox>
+
+									<p:inputTextarea id="txtPersonal9" style="width:300px" rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.hypertension}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.hypertensionTime}" />
+
+									<p:inputTextarea id="txtPersonal10" style="width:450px"
+										rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.hypertension}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.hypertensionMedication}" />
+
+									<p:selectBooleanCheckbox
+										value="#{historyOdontologyBacking.selectedHistoryRecord.hospitalizations}"
+										itemLabel="#{msg['his_rec_per_hospitalizations']}">
+										<p:ajax update="txtPersonal11 txtPersonal12" />
+									</p:selectBooleanCheckbox>
+
+									<p:inputTextarea id="txtPersonal11" style="width:300px"
+										rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.hospitalizations}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.hospitalizationsTime}" />
+
+									<p:inputTextarea id="txtPersonal12" style="width:450px"
+										rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.hospitalizations}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.hospitalizationsMedication}" />
+
+									<p:selectBooleanCheckbox
+										value="#{historyOdontologyBacking.selectedHistoryRecord.allergy}"
+										itemLabel="#{msg['his_rec_per_allergy']}">
+										<p:ajax update="txtPersonal13 txtPersonal14" />
+									</p:selectBooleanCheckbox>
+
+									<p:inputTextarea id="txtPersonal13" style="width:300px"
+										rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.allergy}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.allergyTime}" />
+
+									<p:inputTextarea id="txtPersonal14" style="width:450px"
+										rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.allergy}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.allergyMedication}" />
+
+									<p:selectBooleanCheckbox
+										value="#{historyOdontologyBacking.selectedHistoryRecord.infections}"
+										itemLabel="#{msg['his_rec_per_infections']}">
+										<p:ajax update="txtPersonal15 txtPersonal16" />
+									</p:selectBooleanCheckbox>
+
+									<p:inputTextarea id="txtPersonal15" style="width:300px"
+										rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.infections}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.infectionsTime}" />
+
+									<p:inputTextarea id="txtPersonal16" style="width:450px"
+										rows="3"
+										disabled="#{not historyOdontologyBacking.selectedHistoryRecord.infections}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.infectionsMedication}" />
+
+								</h:panelGrid>
+
+								<p:watermark value="#{msg['his_record_clic_time']}"
+									for="txtPersonal1" />
+								<p:watermark value="#{msg['his_record_clic_time']}"
+									for="txtPersonal3" />
+								<p:watermark value="#{msg['his_record_clic_time']}"
+									for="txtPersonal5" />
+								<p:watermark value="#{msg['his_record_clic_time']}"
+									for="txtPersonal7" />
+								<p:watermark value="#{msg['his_record_clic_time']}"
+									for="txtPersonal9" />
+								<p:watermark value="#{msg['his_record_clic_time']}"
+									for="txtPersonal11" />
+								<p:watermark value="#{msg['his_record_clic_time']}"
+									for="txtPersonal13" />
+								<p:watermark value="#{msg['his_record_clic_time']}"
+									for="txtPersonal15" />
+
+								<p:watermark value="#{msg['his_record_clic_medi']}"
+									for="txtPersonal2" />
+								<p:watermark value="#{msg['his_record_clic_medi']}"
+									for="txtPersonal4" />
+								<p:watermark value="#{msg['his_record_clic_medi']}"
+									for="txtPersonal6" />
+								<p:watermark value="#{msg['his_record_clic_medi']}"
+									for="txtPersonal8" />
+								<p:watermark value="#{msg['his_record_clic_medi']}"
+									for="txtPersonal10" />
+								<p:watermark value="#{msg['his_record_clic_medi']}"
+									for="txtPersonal12" />
+								<p:watermark value="#{msg['his_record_clic_medi']}"
+									for="txtPersonal14" />
+								<p:watermark value="#{msg['his_record_clic_medi']}"
+									for="txtPersonal16" />
+
+								<p:spacer height="5" />
+
+								<h:panelGrid columns="1" width="100%"
+									columnClasses="width25per,width75per">
+									<h:outputText value="#{msg['his_rec_per_occupational']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.occupational}" />
+
+									<h:outputText value="#{msg['his_rec_per_toxic']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.toxic}" />
+
+									<h:outputText value="#{msg['his_rec_blood_type']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.bloodType}" />
+
+									<h:outputText value="#{msg['his_rec_per_surgical']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.surgical}" />
+
+									<h:outputText value="#{msg['his_rec_per_pharmacological']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.pharmacological}" />
+
+									<h:outputText value="#{msg['his_rec_per_immunizations']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.immunizations}" />
+
+									<h:outputText value="#{msg['his_rec_per_transfusion']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.transfusion}" />
+
+									<h:outputText value="#{msg['his_rec_per_other']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.other}" />
+								</h:panelGrid>
+							</p:fieldset>
+
+							<h:panelGrid id="pnlGender" width="100%">
+
+								<p:spacer height="5"
+									rendered="#{historyOdontologyBacking.renderedRecord eq 2?true:false}" />
+
+								<p:fieldset legend="#{msg['his_record_men']}"
+									rendered="#{historyOdontologyBacking.renderedRecord eq 3?true:false}">
+									<h:panelGrid columns="2" width="100%"
+										columnClasses="width25per,width75per">
+
+										<h:outputLabel value="#{msg['his_rec_fuep']}" />
+										<p:calendar
+											value="#{historyOdontologyBacking.selectedHistoryRecord.fuep}"
+											readonlyInput="true" pattern="dd/MM/yyyy" showOn="button"
+											navigator="true" locale="es" yearRange="-100:+0" />
+
+										<h:outputText value="#{msg['his_rec_psa']}" />
+										<p:inputText
+											value="#{historyOdontologyBacking.selectedHistoryRecord.psa}" />
+
+										<h:outputLabel value="#{msg['his_rec_psa_date']}" />
+										<p:calendar
+											value="#{historyOdontologyBacking.selectedHistoryRecord.psaDate}"
+											readonlyInput="true" pattern="dd/MM/yyyy" showOn="button"
+											navigator="true" locale="es" yearRange="-100:+0" />
+									</h:panelGrid>
+								</p:fieldset>
+
+								<p:spacer height="5"
+									rendered="#{historyOdontologyBacking.renderedRecord eq 1?true:false}" />
+
+								<p:fieldset legend="#{msg['his_record_children']}"
+									rendered="#{historyOdontologyBacking.renderedRecord eq 1?true:false}">
+									<h:panelGrid columns="2" width="100%"
+										columnClasses="width25per,width75per">
+
+										<h:outputText value="#{msg['his_rec_neonatal']}" />
+										<p:inputTextarea style="width:950px" rows="3"
+											value="#{historyOdontologyBacking.selectedHistoryRecord.neonatal}" />
+
+										<h:outputText value="#{msg['his_rec_perinatal']}" />
+										<p:inputTextarea style="width:950px" rows="3"
+											value="#{historyOdontologyBacking.selectedHistoryRecord.perinatal}" />
+
+										<h:outputText value="#{msg['his_rec_vaccination']}" />
+										<p:inputTextarea style="width:950px" rows="3"
+											value="#{historyOdontologyBacking.selectedHistoryRecord.vaccination}" />
+
+										<h:outputText value="#{msg['his_rec_growth']}" />
+										<p:inputTextarea style="width:950px" rows="3"
+											value="#{historyOdontologyBacking.selectedHistoryRecord.growth}" />
+
+									</h:panelGrid>
+								</p:fieldset>
+							</h:panelGrid>
+
+							<p:spacer height="5" />
+
+							<p:fieldset legend="#{msg['his_record_family']}">
+								<h:panelGrid columns="2" width="100%"
+									columnClasses="width25per,width75per">
+
+									<h:outputText value="#{msg['his_rec_per_hypertension']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.hypertensionParent}" />
+
+									<h:outputText value="#{msg['his_rec_epoc']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.epocParent}" />
+
+									<h:outputText value="#{msg['his_rec_heart_disease']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.heartDiseaseParent}" />
+
+									<h:outputText value="#{msg['his_rec_asthma']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.asthmaParent}" />
+
+									<h:outputText value="#{msg['his_rec_acv']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.acvParent}" />
+
+									<h:outputText value="#{msg['his_rec_per_cancer']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.cancerParent}" />
+
+									<h:outputText value="#{msg['his_rec_per_diabetes']}" />
+									<p:inputTextarea style="width:950px" rows="3"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.diabetesParent}" />
+								</h:panelGrid>
+							</p:fieldset>
+
+							<p:spacer height="5" />
+
+							<p:fieldset legend="Ondontología">
+								<h:panelGrid width="100%" columns="2">
+									<h:outputText value="#{msg['his_limitation_open_close_mouth']}" />
+									<p:selectOneMenu style="width:150px;"
+										label="#{msg['his_limitation_open_close_mouth']}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.limitationOpenCloseMouth}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+									<h:outputText value="#{msg['his_noise_jaw_open_close_mouth']}" />
+									<p:selectOneMenu style="width:150px;"
+										label="#{msg['his_noise_jaw_open_close_mouth']}"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.noiseJawOpenCloseMouth}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+									<h:outputText value="#{msg['his_herpes_thrush']}" />
+									<p:selectOneMenu label="#{msg['his_herpes_thrush']}"
+										style="width:150px;"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.herpesThrush}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+								</h:panelGrid>
+
+								<h:outputLabel value="Habitos"
+									style="font-size:14;font-weight:bold;" />
+
+								<h:panelGrid width="100%" columns="4">
+									<h:outputText value="#{msg['his_bit_lips_nails_habit']}" />
+									<p:selectOneMenu label="#{msg['his_bit_lips_nails_habit']}"
+										style="width:150px;"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.bitLipsNailsHabit}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+
+									<h:outputLabel value="" />
+									<h:outputLabel value="" />
+
+									<h:outputText value="#{msg['his_smoke_habit']}" />
+									<p:selectOneMenu label="#{msg['his_smoke_habit']}"
+										style="width:150px;"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.smokeHabit}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+									<h:outputText value="#{msg['his_cigarettes_day_habit']}" />
+									<pe:inputNumber minValue="0" maxValue="99" decimalPlaces="0"
+										emptyValue="zero" style="width:150px;"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.cigarettesDayHabit}" />
+									<h:outputText value="#{msg['his_citrus_foods_habit']}" />
+									<p:selectOneMenu label="#{msg['his_citrus_foods_habit']}"
+										style="width:150px;"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.citrusFoodsHabit}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+									<h:outputText value="#{msg['his_bit_objects_habit']}" />
+									<p:selectOneMenu label="#{msg['his_bit_objects_habit']}"
+										style="width:150px;"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.bitObjectsHabit}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+									<h:outputText value="#{msg['his_tooth_clench_habit']}" />
+									<p:selectOneMenu label="#{msg['his_tooth_clench_habit']}"
+										style="width:150px;"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.toothClenchHabit}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+									<h:outputText value="#{msg['his_mouth_breath_habit']}" />
+									<p:selectOneMenu label="#{msg['his_mouth_breath_habit']}"
+										style="width:150px;"
+										value="#{historyOdontologyBacking.selectedHistoryRecord.mouthBreathHabit}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+								</h:panelGrid>
+							</p:fieldset>
+						</p:tab>
+
+						<p:tab title="#{msg['his_general_findings']}"
+							rendered="#{historyOdontologyBacking.renderedTab}"
+							id="tabGeneralFindings">
+							<h:panelGrid columns="4" width="100%"
+								columnClasses="width25per,width25per,width25per,width25per">
+
+								<h:outputLabel value="#{msg['his_physique_heart_rate']}" />
+								<pe:inputNumber symbol="   puls" symbolPosition="s"
+									decimalPlaces="0" style="width:300px" maxValue="200"
+									value="#{historyOdontologyBacking.heartRate}" />
+
+								<h:outputLabel value="#{msg['his_physique_respiratory_rate']}" />
+								<pe:inputNumber symbol="   resp/min" symbolPosition="s"
+									decimalPlaces="0" style="width:300px" maxValue="70"
+									value="#{historyOdontologyBacking.respiratoryRate}" />
+
+								<h:outputLabel value="#{msg['his_physique_blood_pressure']}" />
+								<p:inputText maxlength="7" style="width:300px"
+									value="#{historyOdontologyBacking.selectedHistoryPhysique.bloodPressure}" />
+
+							</h:panelGrid>
+
+							<p:spacer height="5" />
+
+							<p:fieldset legend="Odontología">
+								<h:panelGrid width="100%" columns="2">
+									<h:outputText value="#{msg['his_physique_brush_frecuency']}" />
+									<pe:inputNumber minValue="0" maxValue="99" decimalPlaces="0"
+										symbol="  X dia" emptyValue="zero" symbolPosition="s"
+										style="width:150px;"
+										value="#{historyOdontologyBacking.selectedHistoryPhysique.brushFrecuency}" />
+
+									<h:outputText value="#{msg['his_physique_floss']}" />
+									<p:selectOneMenu label="#{msg['his_physique_floss']}"
+										style="width:150px;"
+										value="#{historyOdontologyBacking.selectedHistoryPhysique.floss}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+
+									<h:outputText value="#{msg['his_physique_oral_hygiene_habit']}" />
+									<p:selectOneMenu style="width:150px;"
+										label="#{msg['his_physique_oral_hygiene_habit']}"
+										value="#{historyOdontologyBacking.selectedHistoryPhysique.oralHygieneHabit}">
+										<f:selectItem itemLabel="#{msg['his_refers_not']}"
+											noSelectionOption="true" />
+										<f:selectItem itemLabel="Si" itemValue="1" />
+										<f:selectItem itemLabel="No" itemValue="2" />
+									</p:selectOneMenu>
+								</h:panelGrid>
+							</p:fieldset>
+
+							<p:spacer height="5" />
+
+							<h:panelGrid columns="2" width="100%">
+								<h:outputLabel value="#{msg['his_history_obs']}" />
+								<p:inputTextarea style="width:850px" rows="3"
+									value="#{historyOdontologyBacking.selectedHistoryPhysique.obs}" />
+							</h:panelGrid>
+						</p:tab>
+
+						<p:tab title="#{msg['his_stomatolog']}" id="tabStomatolog"
+							rendered="#{historyOdontologyBacking.renderedTab}">
+							<h:panelGrid id="pnlStomatolog" columns="9" width="100%"
+								cellpadding="10">
+								<h:outputText value="#{msg['his_stomatolog_head']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_stomatolog_exostosis_head']}" />
+								<p:selectOneMenu label="#{msg['his_stomatolog_exostosis_head']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.exostosisHead}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_stomatolog_endostosis_head']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_endostosis_head']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.endostosisHead}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+
+								<h:outputText value="#{msg['his_stomatolog_face']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText
+									value="#{msg['his_stomatolog_dolichocephalic_face']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_dolichocephalic_face']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.dolichocephalicFace}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_stomatolog_mesocephalic_face']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_mesocephalic_face']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.mesocephalicFace}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText
+									value="#{msg['his_stomatolog_brachycephalic_face']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_brachycephalic_face']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.brachycephalicFace}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+
+								<h:outputText value="#{msg['his_stomatolog_skin']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_stomatolog_normal_skin']}" />
+								<p:selectOneMenu label="#{msg['his_stomatolog_normal_skin']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.normalSkin}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_stomatolog_pale_skin']}" />
+								<p:selectOneMenu label="#{msg['his_stomatolog_pale_skin']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.paleSkin}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_stomatolog_cyanotic_skin']}" />
+								<p:selectOneMenu label="#{msg['his_stomatolog_cyanotic_skin']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.cyanoticSkin}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_stomatolog_red_skin']}" />
+								<p:selectOneMenu label="#{msg['his_stomatolog_red_skin']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.redSkin}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_stomatolog_face']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_stomatolog_transverse_face']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_transverse_face']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.transverseFace}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_stomatolog_longitudinal_face']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_longitudinal_face']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.longitudinalFace}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+
+								<h:outputText value="#{msg['his_stomatolog_side_face']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_stomatolog_concave_side_face']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_concave_side_face']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.concaveSideFace}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_stomatolog_convex_side_face']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_convex_side_face']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.convexSideFace}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+
+								<h:outputText value="#{msg['his_stomatolog_muscles']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_stomatolog_hypotonic_muscles']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_hypotonic_muscles']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.hypotonicMuscles}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText
+									value="#{msg['his_stomatolog_hypertonic_muscles']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_hypertonic_muscles']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.hypertonicMuscles}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+								<h:outputLabel value="" />
+
+								<h:outputText value="#{msg['his_stomatolog_neck']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_stomatolog_lymph_node_chain']}" />
+								<p:selectOneMenu
+									label="#{msg['his_stomatolog_lymph_node_chain']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.lymphNodeChain}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_stomatolog_othres']}" />
+								<p:selectOneMenu label="#{msg['his_stomatolog_othres']}"
+									value="#{historyOdontologyBacking.crmOdontologyStomatolog.othres}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+							</h:panelGrid>
+							<h:outputLabel value="#{msg['his_history_obs']}" />
+							<p:inputTextarea style="width:850px" rows="3"
+								value="#{historyOdontologyBacking.crmOdontologyStomatolog.obs}" />
+						</p:tab>
+
+						<p:tab title="#{msg['his_temp_joint']}" id="tabTempJoint"
+							rendered="#{historyOdontologyBacking.renderedTab}">
+							<h:panelGrid id="pnlTempJoint" columns="7" width="100%"
+								cellpadding="10">
+
+								<h:outputText value="#{msg['his_temp_joint_noise']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_temp_joint_opening']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_opening']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.openingNoise}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_temp_joint_closure']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_closure']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.closureNoise}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_temp_joint_laterality']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_laterality']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.lateralityNoise}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_temp_joint_deviation']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_temp_joint_opening']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_opening']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.openingDeviaton}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_temp_joint_closure']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_closure']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.closureDeviaton}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_temp_joint_laterality']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_laterality']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.lateralityDeviaton}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_temp_joint_pain']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_temp_joint_opening']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_opening']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.openingPain}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_temp_joint_closure']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_closure']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.closurePain}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_temp_joint_laterality']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_laterality']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.lateralityPain}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText
+									value="#{msg['his_temp_joint_fatigue_muscle_pain']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_temp_joint_opening']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_opening']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.openingFatigue}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_temp_joint_closure']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_closure']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.closureFatigue}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_temp_joint_laterality']}" />
+								<p:selectOneMenu label="#{msg['his_temp_joint_laterality']}"
+									value="#{historyOdontologyBacking.crmOdontologyTempJoint.lateralityFatigue}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+							</h:panelGrid>
+
+							<h:outputLabel value="#{msg['his_history_obs']}" />
+							<p:inputTextarea style="width:850px" rows="3"
+								value="#{historyOdontologyBacking.crmOdontologyTempJoint.obs}" />
+						</p:tab>
+
+						<p:tab title="#{msg['his_soft_tissue']}" id="tabSoftTissue"
+							rendered="#{historyOdontologyBacking.renderedTab}">
+							<h:panelGrid id="pnlSoftTissue" columns="5" width="100%"
+								cellpadding="10">
+
+								<h:outputText value="#{msg['his_soft_tissue_gland']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_soft_tissue_normal']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_normal']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.glandNormal}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_tissue_altered']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_altered']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.glandAltered}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_soft_tissue_lymph']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_soft_tissue_normal']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_normal']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.lymphNormal}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_tissue_altered']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_altered']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.lymphAltered}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_soft_tissue_oral_mucosa']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_soft_tissue_normal']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_normal']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.oralMucosaNormal}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_tissue_altered']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_altered']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.oralMucosaAltered}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_soft_tissue_braces']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_soft_tissue_normal']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_normal']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.bracesNormal}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_tissue_altered']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_altered']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.bracesAltered}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_soft_tissue_tongue']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_soft_tissue_normal']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_normal']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.tongueNormal}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_tissue_altered']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_altered']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.tongueAltered}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_soft_tissue_palate']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_soft_tissue_normal']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_normal']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.palateNormal}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_tissue_altered']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_altered']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.palateAltered}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_soft_tissue_mounth_floor']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_soft_tissue_normal']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_normal']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.mounthFloorNormal}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_tissue_altered']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_altered']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.mounthFloorAltered}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_soft_tissue_oropharynx']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_soft_tissue_normal']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_normal']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.oropharynxNormal}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_tissue_altered']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_altered']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.oropharynxAltered}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_soft_tissue_tonsils']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_soft_tissue_normal']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_normal']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.tonsilsNormal}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_tissue_altered']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_altered']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.tonsilsAltered}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+								<h:outputText value="#{msg['his_soft_tissue_cheeks']}"
+									style="font-size:12;font-weight:bold;" />
+								<h:outputText value="#{msg['his_soft_tissue_normal']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_normal']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.cheeksNormal}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_tissue_altered']}" />
+								<p:selectOneMenu label="#{msg['his_soft_tissue_altered']}"
+									value="#{historyOdontologyBacking.crmOdontologySoftTissue.cheeksAltered}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+
+							</h:panelGrid>
+							<h:outputLabel value="#{msg['his_history_obs']}" />
+							<p:inputTextarea style="width:850px" rows="3"
+								value="#{historyOdontologyBacking.crmOdontologySoftTissue.obs}" />
+						</p:tab>
+
+						<p:tab title="#{msg['his_soft_periodontal']}" id="tabPeriodontal"
+							rendered="#{historyOdontologyBacking.renderedTab}">
+							<h:panelGrid id="pnlPeriodontal" columns="4" width="100%"
+								cellpadding="10">
+
+								<h:outputText value="#{msg['his_soft_periodontal_gingivitis']}" />
+								<p:selectOneMenu
+									label="#{msg['his_soft_periodontal_gingivitis']}"
+									value="#{historyOdontologyBacking.crmOdontologyPeriodontal.gingivitis}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText
+									value="#{msg['his_soft_periodontal_periodontitis']}" />
+								<p:selectOneMenu
+									label="#{msg['his_soft_periodontal_periodontitis']}"
+									value="#{historyOdontologyBacking.crmOdontologyPeriodontal.periodontitis}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_periodontal_mobility']}" />
+								<p:selectOneMenu label="#{msg['his_soft_periodontal_mobility']}"
+									value="#{historyOdontologyBacking.crmOdontologyPeriodontal.mobility}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText value="#{msg['his_soft_periodontal_bag_teeth']}" />
+								<p:selectOneMenu
+									label="#{msg['his_soft_periodontal_bag_teeth']}"
+									value="#{historyOdontologyBacking.crmOdontologyPeriodontal.bagTeeth}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText
+									value="#{msg['his_soft_periodontal_gingival_recession']}" />
+								<p:selectOneMenu
+									label="#{msg['his_soft_periodontal_gingival_recession']}"
+									value="#{historyOdontologyBacking.crmOdontologyPeriodontal.gingivalRecession}">
+									<f:selectItem itemLabel="#{msg['his_refers_not']}"
+										noSelectionOption="true" />
+									<f:selectItem itemLabel="Si" itemValue="1" />
+									<f:selectItem itemLabel="No" itemValue="2" />
+								</p:selectOneMenu>
+								<h:outputText
+									value="#{msg['his_soft_periodontal_plaque_index']}" />
+								<pe:inputNumber symbol="%" symbolPosition="s" emptyValue="zero"
+									decimalPlaces="2"
+									value="#{historyOdontologyBacking.crmOdontologyPeriodontal.plaqueIndex}" />
+							</h:panelGrid>
+							<h:outputLabel value="#{msg['his_history_obs']}" />
+							<p:inputTextarea style="width:850px" rows="3"
+								value="#{historyOdontologyBacking.crmOdontologyPeriodontal.obs}" />
+						</p:tab>
+
+						<p:tab title="#{msg['his_odontogram']}" id="tabOdontogram">
+							<h:panelGrid id="pnlOdontogram" columns="1" width="100%"
+								cellpadding="10">
+								<ui:include src="odontogram.xhtml">
+								</ui:include>
+							</h:panelGrid>
+						</p:tab>
+
+						<p:tab title="#{msg['his_supplementary_exams']}"
+							id="tabSupplementaryExams">
+							<h:panelGrid id="pnlSupplementaryExams" columns="1" width="100%"
+								cellpadding="10">
+								<p:inputTextarea style="width:1000px" rows="5"
+									value="#{historyOdontologyBacking.crmOdontologySupplExams.obs}" />
+							</h:panelGrid>
+						</p:tab>
+
+						<p:tab title="#{msg['his_evolution']}" id="tabEvolution">
+							<h:panelGrid id="pnlEvolution" columns="1" width="100%"
+								cellpadding="10">
+								<p:inputTextarea style="width:1000px" rows="5"
+									label="#{msg['his_evolution']}"
+									value="#{historyOdontologyBacking.crmOdontologyEvolution.obs}" />
+							</h:panelGrid>
+						</p:tab>
+
+						<p:tab title="#{msg['his_history_ip_odo']}" id="IP">
+
+							<p:dataTable id="dtbDiagnosis" var="rec"
+								value="#{historyOdontologyBacking.diagnosisModel}"
+								selection="#{historyOdontologyBacking.selectedsDiagnosis}"
+								rowKey="#{rec.id}" paginator="true" rows="15" style="width:100%"
+								emptyMessage="#{msg['glb_no_records_found']}">
+
+								<p:column selectionMode="multiple" style="width:18px" />
+
+								<p:column headerText="#{msg['cie_code']}">
+									<h:outputLabel value="#{rec.crmCie.code}" />
+								</p:column>
+
+								<p:column headerText="#{msg['cie_desc']}">
+									<h:outputLabel value="#{rec.crmCie.description}" />
+								</p:column>
+
+								<p:column style="width:8%">
+									<h:panelGrid columns="2" width="100%"
+										styleClass="ui-widget-content grid">
+										<p:commandButton oncomplete="dlgMedicine.show()"
+											update=":form:dialogMedicine" icon="ui-icon-plusthick"
+											title="#{msg['btn_select_medication_odo']}"
+											action="#{historyOdontologyBacking.selectMedicationAction}">
+											<f:setPropertyActionListener value="#{rec}"
+												target="#{historyOdontologyBacking.selectedDiagnosis}" />
+										</p:commandButton>
+										<p:commandButton oncomplete="dlgPosology.show()"
+											update=":form:dialogPosology" icon="ui-icon-comment"
+											title="#{msg['btn_add_posology_odo']}"
+											action="#{historyOdontologyBacking.selectPosologyAction}">
+											<f:setPropertyActionListener value="#{rec}"
+												target="#{historyOdontologyBacking.selectedDiagnosis}" />
+										</p:commandButton>
+									</h:panelGrid>
+								</p:column>
+
+								<f:facet name="footer">
+									<p:commandButton id="btnSelCie" oncomplete="dlgCie.show()"
+										value="#{msg['btn_select_diagnosis']}" icon="ui-icon-search"
+										actionListener="#{historyOdontologyBacking.selectDiagnosisAction}"
+										update=":form:dialogCie" />
+									<p:commandButton oncomplete="dlgMedicationPreview.show()"
+										value="#{msg['btn_view_medication_odo']}"
+										icon="ui-icon-search"
+										disabled="#{historyOdontologyBacking.disabledMedication}"
+										update=":form:dialogMedicationPreview" />
+									<p:commandButton value="#{msg['btn_delete']}"
+										disabled="#{historyOdontologyBacking.disabledDiagnosis}"
+										icon="ui-icon-closethick" update="dtbDiagnosis"
+										actionListener="#{historyOdontologyBacking.removeDiagnosisAction}" />
+								</f:facet>
+
+							</p:dataTable>
+						</p:tab>
+
+					</p:accordionPanel>
+
+					<h:panelGrid id="pnlHistorial"
+						rendered="#{historyOdontologyBacking.modeHistorial}" width="100%">
+
+						<ui:include src="historialOdo.xhtml">
+							<ui:param name="prefix" value="pnlHistorial" />
+						</ui:include>
+
+					</h:panelGrid>
+
+					<p:dialog header="#{msg['his_history_ip_odo']}" widgetVar="dlgCie"
+						resizable="false" id="dialogCie" showEffect="fade"
+						hideEffect="explode" modal="true" width="600">
+
+						<h:panelGrid columns="2" width="100%">
+
+							<p:outputPanel>
+								<p:selectOneRadio id="sorCIE"
+									value="#{historyOdontologyBacking.optionSearchCie}"
+									layout="custom">
+									<f:selectItem itemLabel="#{msg['cie_code']}" itemValue="1" />
+									<f:selectItem itemLabel="#{msg['cie_desc']}" itemValue="2" />
+								</p:selectOneRadio>
+
+								<h:panelGrid columns="3" width="100%">
+									<p:radioButton id="rdbCIE1" for="sorCIE" itemIndex="0" />
+									<h:outputLabel for="rdbCIE1" value="#{msg['cie_code']}" />
+									<p:inputText value="#{historyOdontologyBacking.codeCIE}"
+										style="width:100%" />
+
+									<p:radioButton id="rdbCIE2" for="sorCIE" itemIndex="1" />
+									<h:outputLabel for="rdbCIE2" value="#{msg['cie_desc']}" />
+									<p:inputText value="#{historyOdontologyBacking.descCIE}"
+										style="width:100%" />
+								</h:panelGrid>
+							</p:outputPanel>
+
+							<f:facet name="footer">
+								<p:spacer height="10" />
+								<p:commandButton value="#{msg['btn_search']}"
+									process="dialogCie" icon="ui-icon-search"
+									update="pnlTable3 recordTable3 btnAddCIE"
+									actionListener="#{historyOdontologyBacking.searchCIEAction}" />
+								<p:commandButton id="btnAddCIE" value="#{msg['btn_add']}"
+									icon="ui-icon-plusthick" process="dialogCie"
+									update="recordTable3 :form:accordion:dtbDiagnosis"
+									actionListener="#{historyOdontologyBacking.addCieAction}"
+									disabled="#{historyOdontologyBacking.disabledAddCie}" />
+							</f:facet>
+						</h:panelGrid>
+
+						<p:spacer height="10" />
+
+						<p:scrollPanel id="pnlTable3" style="width:580px;height:400px">
+							<p:dataTable id="recordTable3" var="rec"
+								value="#{historyOdontologyBacking.cieModel}" rowKey="#{rec.id}"
+								selection="#{historyOdontologyBacking.selectedCie}"
+								paginator="true" rows="15" style="width:570px"
+								emptyMessage="#{msg['glb_no_records_found']}">
+
+								<p:column selectionMode="single" style="width:18px" />
+
+								<p:column headerText="#{msg['cie_code']}">
+									<h:outputLabel value="#{rec.code}" />
+								</p:column>
+
+								<p:column headerText="#{msg['cie_desc']}">
+									<h:outputLabel value="#{rec.description}" />
+								</p:column>
+
+							</p:dataTable>
+						</p:scrollPanel>
+
+					</p:dialog>
+
+					<p:dialog header="#{msg['his_history_medicaction']}"
+						widgetVar="dlgMedicine" resizable="false" id="dialogMedicine"
+						showEffect="fade" hideEffect="explode" modal="true" width="600"
+						height="500">
+
+						<h:panelGrid columns="2" width="100%">
+
+							<p:outputPanel>
+								<p:selectOneRadio id="sorMedicine"
+									value="#{historyOdontologyBacking.optionSearchMaterial}"
+									layout="custom">
+									<f:selectItem itemLabel="#{msg['cie_code']}" itemValue="1" />
+									<f:selectItem itemLabel="#{msg['cie_desc']}" itemValue="2" />
+								</p:selectOneRadio>
+
+								<h:panelGrid columns="3" width="100%">
+									<p:radioButton id="rdbMedicine1" for="sorMedicine"
+										itemIndex="0" />
+									<h:outputLabel for="rdbMedicine1" value="#{msg['cie_code']}" />
+									<p:inputText value="#{historyOdontologyBacking.codeMaterial}"
+										style="width:100%" />
+
+									<p:radioButton id="rdbMedicine2" for="sorMedicine"
+										itemIndex="1" />
+									<h:outputLabel for="rdbMedicine2" value="#{msg['cie_desc']}" />
+									<p:inputText value="#{historyOdontologyBacking.descMaterial}"
+										style="width:100%" />
+
+									<h:outputLabel />
+									<h:outputLabel value="#{msg['sal_material_amount']}" />
+									<pe:inputNumber value="#{historyOdontologyBacking.amount}"
+										decimalPlaces="0" />
+								</h:panelGrid>
+							</p:outputPanel>
+
+							<f:facet name="footer">
+								<p:spacer height="10" />
+
+								<p:commandButton value="#{msg['btn_search']}"
+									icon="ui-icon-search" process="@this, dialogMedicine"
+									update="pnlTable4 recordTable4 btnAddMaterial"
+									actionListener="#{historyOdontologyBacking.searchMaterialAction}" />
+								<p:commandButton id="btnAddMaterial" value="#{msg['btn_add']}"
+									icon="ui-icon-plusthick" process="@this, dialogMedicine"
+									update="recordTable4 :form:accordion:dtbDiagnosis"
+									actionListener="#{historyOdontologyBacking.addMaterialAction}"
+									disabled="#{historyOdontologyBacking.disabledAddMaterial}" />
+							</f:facet>
+						</h:panelGrid>
+
+						<p:spacer height="10" />
+
+						<p:scrollPanel id="pnlTable4" style="width:580px;height:400px">
+							<p:dataTable id="recordTable4" var="rec"
+								value="#{historyOdontologyBacking.materialModel}"
+								rowKey="#{rec.code}"
+								selection="#{historyOdontologyBacking.selectedMaterial}"
+								paginator="true" rows="15" style="width:570px"
+								emptyMessage="#{msg['glb_no_records_found']}">
+
+								<p:column selectionMode="single" style="width:18px" />
+
+								<p:column headerText="#{msg['cie_code']}">
+									<h:outputLabel value="#{rec.code}" />
+								</p:column>
+
+								<p:column headerText="#{msg['cie_desc']}">
+									<h:outputLabel value="#{rec.names}" />
+								</p:column>
+
+							</p:dataTable>
+						</p:scrollPanel>
+
+					</p:dialog>
+
+					<p:dialog header="#{msg['btn_add_posology_odo']}"
+						widgetVar="dlgPosology" resizable="false" id="dialogPosology"
+						showEffect="fade" hideEffect="explode" modal="true" width="600"
+						closable="false">
+
+						<h:panelGrid width="100%">
+
+							<p:inputTextarea rows="7" style="width:560px"
+								value="#{historyOdontologyBacking.posology}" />
+
+							<p:commandButton value="Aceptar" update=":form:dialogPosology"
+								action="#{historyOdontologyBacking.savePosologyAction}"
+								oncomplete="dlgPosology.hide()" />
+						</h:panelGrid>
+
+
+					</p:dialog>
+
+					<p:dialog header="#{msg['cie_grp_medication_odo']}"
+						widgetVar="dlgMedicationPreview" resizable="false"
+						id="dialogMedicationPreview" showEffect="fade"
+						hideEffect="explode" modal="true" width="800">
+
+						<p:dataTable id="dtbMedication" var="rec"
+							value="#{historyOdontologyBacking.medicationModel}"
+							selection="#{historyOdontologyBacking.selectedMedication}"
+							rowKey="#{rec.id}" paginator="true" rows="15" style="width:100%"
+							emptyMessage="#{msg['glb_no_records_found']}">
+
+							<p:column selectionMode="multiple" style="width:18px" />
+
+							<p:column headerText="#{msg['cie_grp_diagnosis']}">
+								<h:outputLabel value="#{rec.crmCie.description}" />
+							</p:column>
+
+							<p:column headerText="#{msg['sal_material_code']}">
+								<h:outputLabel value="#{rec.codMaterial}" />
+							</p:column>
+
+							<p:column headerText="#{msg['sal_material_descr']}">
+								<h:outputLabel value="#{rec.descMaterial}" />
+							</p:column>
+
+							<p:column headerText="#{msg['sal_material_amount']}"
+								style="width:100px">
+								<pe:inputNumber value="#{rec.unit}" symbolPosition="s"
+									decimalPlaces="0" style="width:100px" />
+							</p:column>
+
+							<f:facet name="footer">
+								<p:commandButton id="btnSelMaterial"
+									oncomplete="dlgMedicine.show()" update=":form:dialogMedicine"
+									disabled="#{historyOdontologyBacking.disabledDiagnosis}"
+									value="#{msg['btn_select']}" icon="ui-icon-search"
+									actionListener="#{historyOdontologyBacking.selectMedicationAction}" />
+								<p:commandButton value="#{msg['btn_delete']}"
+									disabled="#{historyOdontologyBacking.disabledMedication}"
+									icon="ui-icon-closethick" update="dtbMedication"
+									actionListener="#{historyOdontologyBacking.removeMedicationAction}" />
+							</f:facet>
+
+						</p:dataTable>
+
+					</p:dialog>
+
+					<p:confirmDialog id="confirmDialog"
+						message="#{msg['glb_question']}"
+						header="#{msg['btn_close_appointment']}" severity="alert"
+						widgetVar="confirmation">
+
+						<p:commandButton id="confirm" value="#{msg['btn_ok']}"
+							oncomplete="confirmation.hide()" process="@this,accordion"
+							update=":form:accordion :form:growl :form:toolBar"
+							actionListener="#{historyOdontologyBacking.closeAppointmentAction}" />
+						<p:commandButton id="decline" value="#{msg['btn_cancel']}"
+							onclick="confirmation.hide()" type="button" />
+
+					</p:confirmDialog>
+
+					<p:dialog id="dialogHistorial" widgetVar="dlgHistorial"
+						resizable="true" draggable="true" width="1000" height="400"
+						header="#{msg['btn_view_history']}">
+
+						<ui:include src="historialOdo.xhtml">
+							<ui:param name="prefix" value="dlgHistorial" />
+						</ui:include>
+
+					</p:dialog>
+
+					<p:dialog header="#{msg['his_history_consent']}"
+						widgetVar="dlgConsent" resizable="false" id="dialogConsent"
+						showEffect="fade" hideEffect="explode" modal="true" width="600"
+						dynamic="true">
+
+						<h:panelGrid id="pnlConsent" columns="2" width="100%">
+							<h:outputLabel value="#{msg['con_date_informed']}" />
+							<p:calendar value="#{historyOdontologyBacking.consentDate}"
+								required="true" id="calConsentDate" showOn="button"
+								navigator="true" pattern="dd/MM/yyyy" readonlyInput="true"
+								locale="es" label="#{msg['con_date_informed']}"
+								maxdate="#{historyOdontologyBacking.today}" />
+
+							<h:outputLabel value="#{msg['con_consent']}" />
+							<p:fileUpload cancelLabel="#{msg['file_cancel']}"
+								invalidFileMessage="#{msg['file_invalid_size']}"
+								uploadLabel="#{msg['file_upload']}"
+								label="#{msg['file_choose']}"
+								fileUploadListener="#{historyOdontologyBacking.handleFileUpload}"
+								mode="advanced" sizeLimit="10000000" auto="true"
+								allowTypes="/(\.|\/)(pdf|jpe?g|png)$/" />
+
+							<p:commandButton value="#{msg['btn_add']}"
+								process="@this,pnlConsent"
+								actionListener="#{historyOdontologyBacking.saveConsentAction}"
+								update=":form:growl :form:pnlHistorial_tabview:tblConsent :form:dlgHistorial_tabview:tblConsent"
+								oncomplete="handleConsentComplete(xhr, status, args)" />
+						</h:panelGrid>
+
+					</p:dialog>
+
+				</h:panelGrid>
+
+				<pe:remoteCommand id="getCurrentToothCommand" name="getCurrentTooth"
+					process="@this"
+					update="growl form:accordion:pnlOdontogramProcedure"
+					actionListener="#{historyOdontologyBacking.getCurrentTooth}">
+					<pe:methodSignature parameters="java.lang.String" />
+					<pe:methodParam name="current" />
+				</pe:remoteCommand>
+
+				<pe:remoteCommand id="loadProcedureToothCommand"
+					name="loadProcedureTooth" process="@this"
+					action="#{historyOdontologyBacking.loadProcedureTooth}"
+					oncomplete="showProcedureTooth(xhr, status, args);">
+				</pe:remoteCommand>
+			</h:form>
+		</p:panel>
+
+		<h:outputScript library="js" name="odontogram.js" />
+	</ui:define>
+
+</ui:composition>
+</html>

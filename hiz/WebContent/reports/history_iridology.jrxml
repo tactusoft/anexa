@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="history_organometry" pageWidth="555" pageHeight="802" columnWidth="555" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="258c62b7-639f-43e7-ac7b-c289802e1be2">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="P_ID_PATIENT" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT
+a.id,
+b.start_appointment_date,
+a.left_obs,
+a.right_obs
+FROM crm_db.crm_history_iridology a JOIN crm_db.crm_appointment b on a.id_appointment = b.id
+WHERE b.id_patient = $P{P_ID_PATIENT}
+ORDER by b.start_appointment_date DESC]]>
+	</queryString>
+	<field name="id" class="java.lang.Integer">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="start_appointment_date" class="java.sql.Timestamp">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="left_obs" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="right_obs" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<columnHeader>
+		<band height="30" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="552" height="20" uuid="cccfadfe-8d80-4b4f-b9cf-727267a05009"/>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Iridología]]></text>
+			</staticText>
+			<line>
+				<reportElement x="1" y="19" width="554" height="1" uuid="ed1b7d1a-c512-4e53-8ad3-fa73dc9b5448"/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="201" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="4" width="63" height="20" uuid="e1ed9247-c63e-4e37-8b9e-1b3b97f0ce65"/>
+				<text><![CDATA[Cita del día:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="63" y="4" width="489" height="20" uuid="d82c8a93-5427-4d2d-b895-7722b051e68b"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{start_appointment_date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="44" width="551" height="64" uuid="775e1359-54d2-4d87-a4de-c20a9ad20777"/>
+				<textFieldExpression><![CDATA[$F{left_obs}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="1" y="24" width="551" height="20" uuid="5c12c481-fe46-4ee4-b3b2-d4fa20269f57"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Observaciones Ojo Izquierdo]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="108" width="551" height="20" uuid="2b306cb9-206d-4c43-87e1-d1974dd25c4b"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Observaciones Ojo Derecho]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="0" y="128" width="551" height="64" uuid="56c061e9-a207-49cb-a86a-30e777e397ce"/>
+				<textFieldExpression><![CDATA[$F{right_obs}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

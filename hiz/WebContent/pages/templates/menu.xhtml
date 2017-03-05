@@ -1,0 +1,21 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<h:form id="formMenu">
+
+	<p:menubar rendered="#{loginBacking.authenticated}"
+		model="#{menuBacking.model}" style="width: 1150px;">
+
+		<f:facet name="options">
+			<p:commandButton value="#{msg['btn_close']}" icon="ui-icon-close"
+				action="#{loginBacking.logout}" immediate="true" />
+		</f:facet>
+	</p:menubar>
+
+</h:form>
+
+</html>

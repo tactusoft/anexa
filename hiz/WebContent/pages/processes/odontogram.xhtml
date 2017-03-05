@@ -1,0 +1,24 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<h:panelGroup id="svgContainer" layout="block" style="width:100%"
+	rendered="#{not historyOdontologyBacking.modeHistorial}" />
+
+<p:panel header="Procedimientos">
+	<h:panelGrid id="pnlOdontogramProcedure" width="100%" columns="1">
+		<p:selectOneMenu label="Tratamiento"
+			value="#{historyOdontologyBacking.currentProcedure}"
+			style="width:700px">
+			<p:ajax listener="#{historyOdontologyBacking.handleProcedureChange}"
+				oncomplete="applyProcedure(xhr, status, args);" />
+			<f:selectItems
+				value="#{historyOdontologyBacking.listOdotogramProcedure}" />
+		</p:selectOneMenu>
+	</h:panelGrid>
+</p:panel>
+
+</html>

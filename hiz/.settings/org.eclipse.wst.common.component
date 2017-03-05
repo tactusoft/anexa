@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="hiz">
+        <wb-resource deploy-path="/" source-path="/WebContent"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/JavaSource"/>
+        <dependent-module archiveName="affinityWebServices.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/affinityWebServices/affinityWebServices">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/hiz-model/hiz-model">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="java-output-path" value="/hiz/WebContent/WEB-INF/classes"/>
+        <property name="context-root" value="hiz"/>
+    </wb-module>
+</project-modules>

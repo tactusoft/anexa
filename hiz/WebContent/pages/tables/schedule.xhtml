@@ -1,0 +1,81 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:100%;"
+			header="#{msg['title_schedule']}">
+
+			<p:spacer height="10" />
+
+			<h:form id="form" enctype="multipart/form-data">
+
+				<p:growl id="growl" showDetail="true" />
+
+				<p:toolbar id="toolBar" style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_new']}"
+							actionListener="#{scheduleBacking.newAction}"
+							update="recordTable,toolBar,fileUpload,options"
+							icon="ui-icon-document" />
+
+						<p:commandButton value="#{msg['btn_analyze']}"
+							actionListener="#{scheduleBacking.analyzeAction}"
+							update="recordTable,toolBar" icon="ui-icon-check"
+							disabled="#{scheduleBacking.disabledButton}" />
+
+						<p:commandButton value="#{msg['btn_execute']}"
+							actionListener="#{scheduleBacking.executeAction}"
+							icon="ui-icon-check" update="recordTable,toolBar,growl"
+							disabled="#{scheduleBacking.disabledExecuteButton}" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="5" />
+
+				<p:fileUpload id="fileUpload"
+					fileUploadListener="#{scheduleBacking.handleFileUpload}"
+					mode="advanced" sizeLimit="100000" allowTypes="/(\.|\/)(txt|csv)$/"
+					uploadLabel="#{msg['file_upload']}"
+					invalidSizeMessage="#{msg['file_invalid_size']}"
+					invalidFileMessage="#{msg['file_invalid_type']}"
+					cancelLabel="#{msg['file_cancel']}" label="#{msg['file_choose']}"
+					update="growl toolBar" />
+
+				<p:spacer height="5" />
+
+				<p:selectOneRadio id="options" value="#{scheduleBacking.mode}">
+					<f:selectItem itemLabel="#{msg['sch_maintain']}"
+						itemValue="MAINTAIN" />
+					<f:selectItem itemLabel="#{msg['sch_remove']}" itemValue="REMOVE" />
+				</p:selectOneRadio>
+
+				<p:spacer height="5" />
+
+				<p:dataTable id="recordTable" var="rec"
+					value="#{scheduleBacking.listScheduleBranch}" paginator="true"
+					rows="20" style="width:100%" emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column headerText="#{msg['spc_code']}">
+						<h:outputLabel value="#{rec.line}" />
+					</p:column>
+
+					<p:column headerText="#{msg['spc_description']}">
+						<h:outputLabel value="#{rec.message}" />
+					</p:column>
+
+				</p:dataTable>
+
+			</h:form>
+
+		</p:panel>
+
+	</ui:define>
+</ui:composition>
+</html>

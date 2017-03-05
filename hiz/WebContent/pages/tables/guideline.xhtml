@@ -1,0 +1,121 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:600px;"
+			header="#{msg['title_guideline']}">
+
+			<p:spacer height="10" />
+
+			<h:form id="form">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_new']}" icon="ui-icon-document"
+							action="#{guidelineBacking.newAction}" oncomplete="dlg.show()"
+							update=":editForm:dialog" />
+						<p:commandButton value="#{msg['btn_edit']}" icon="ui-icon-pencil"
+							oncomplete="dlg.show()"
+							update=":editForm:pnlDetail :editForm:editor" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<p:dataTable id="recordTable" var="rec"
+					value="#{guidelineBacking.model}" rowKey="#{rec.id}"
+					selection="#{guidelineBacking.selected}" paginator="true" rows="10"
+					style="width:100%" emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column selectionMode="single" style="width:18px" />
+
+					<p:column headerText="#{msg['gui_desc_media']}"
+						filterMatchMode="contains" filterBy="descMedia">
+						<h:outputLabel value="#{rec.descMedia}" />
+					</p:column>
+
+					<p:column headerText="#{msg['gui_phone']}"
+						filterMatchMode="contains" filterBy="phone">
+						<h:outputLabel value="#{rec.phone}" />
+					</p:column>
+
+					<p:column headerText="#{msg['gui_guideline']}"
+						filterMatchMode="contains" filterBy="guideline">
+						<h:outputLabel value="#{rec.guideline}" />
+					</p:column>
+
+				</p:dataTable>
+
+			</h:form>
+
+		</p:panel>
+
+		<h:form id="editForm">
+
+			<p:growl id="growl" showDetail="true" />
+
+			<p:dialog header="#{msg['msg_detail']}" widgetVar="dlg"
+				resizable="false" id="dialog" showEffect="fade" hideEffect="explode"
+				modal="true" width="500" dynamic="true">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_save']}" icon="ui-icon-disk"
+							action="#{guidelineBacking.saveAction}"
+							update="growl :form:recordTable" oncomplete="dlg.hide();" />
+						<p:commandButton value="#{msg['btn_close']}"
+							icon="ui-icon-closethick" update="growl :form:recordTable"
+							process="@none" oncomplete="dlg.hide();" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<h:panelGrid id="pnlDetail" columns="2" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+
+					<h:outputLabel value="#{msg['gui_desc_media']}" />
+					<h:inputText value="#{guidelineBacking.selected.descMedia}"
+						style="width:100%" label="#{msg['gui_desc_media']}"
+						required="true" />
+
+					<h:outputLabel value="#{msg['gui_phone']}" />
+					<h:inputText value="#{guidelineBacking.selected.phone}"
+						style="width:100%" label="#{msg['gui_phone']}" required="true" />
+
+					<h:outputLabel value="#{msg['gui_guideline']}" />
+					<h:inputText value="#{guidelineBacking.selected.guideline}"
+						style="width:100%" label="#{msg['gui_guideline']}" required="true" />
+
+					<h:outputLabel value="#{msg['gui_profile']}" />
+					<p:selectOneMenu required="true" label="#{msg['gui_profile']}"
+						style="width:255px" value="#{guidelineBacking.selected.idProfile}">
+						<f:selectItems value="#{guidelineBacking.listAllProfile}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['gui_country']}" />
+					<p:selectOneMenu required="true" label="#{msg['gui_country']}"
+						style="width:255px" value="#{guidelineBacking.selected.idCountry}">
+						<f:selectItems value="#{guidelineBacking.listCountry}" />
+					</p:selectOneMenu>
+
+				</h:panelGrid>
+
+				<h:outputLabel value="#{msg['gui_libretto']}" />
+				<p:editor id="editor" value="#{guidelineBacking.selected.libretto}"
+					width="480" required="true" widgetVar="editor"
+					requiredMessage="Digite un Libreto para completar el formulario" />
+
+			</p:dialog>
+		</h:form>
+
+	</ui:define>
+</ui:composition>
+</html>

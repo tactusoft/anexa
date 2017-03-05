@@ -1,0 +1,202 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:700px;"
+			header="#{msg['title_block_patient']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:growl id="growl" showDetail="true" autoUpdate="true" />
+
+				<p:toolbar id="toolBar" style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_new']}" icon="ui-icon-document"
+							actionListener="#{blockPatientBacking.newAction}" process="@this"
+							update="toolBar pnlDetail" />
+						<p:commandButton value="#{msg['btn_add_patient']}"
+							icon="ui-icon-circle-check" process="@this"
+							oncomplete="dlg2.show()" update=":editForm:dialog2"
+							disabled="#{blockPatientBacking.selectedPatient ne null}" />
+						<p:commandButton id="btnSave" value="#{msg['btn_save']}"
+							icon="ui-icon-disk" update="toolBar pnlDetail"
+							actionListener="#{blockPatientBacking.saveAction}"
+							disabled="#{blockPatientBacking.selectedPatient eq null or blockPatientBacking.saved}" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<h:panelGrid id="pnlDetail" columns="2" width="100%"
+					columnClasses="width25per,width75per">
+
+					<h:outputLabel
+						value="#{blockPatientBacking.selectedPatient.contact?msg['pat_phone_number']:msg['pat_sap_code']}"
+						rendered="#{blockPatientBacking.selectedPatient eq null?false:true}" />
+					<p:inputText
+						value="#{blockPatientBacking.selectedPatient.contact?blockPatientBacking.selectedPatient.phoneNumber:blockPatientBacking.selectedPatient.codeSap}"
+						style="width:700px;background-color:#FFFF80;font-weight:bold;"
+						readonly="true"
+						rendered="#{blockPatientBacking.selectedPatient eq null?false:true}" />
+
+					<h:outputLabel value="#{msg['pat_names']}"
+						rendered="#{blockPatientBacking.selectedPatient eq null?false:true}" />
+					<p:inputText id="txtPatientNames"
+						value="#{blockPatientBacking.selectedPatient.names}"
+						style="width:700px;background-color:#FFFF80;font-weight:bold;"
+						readonly="true"
+						rendered="#{blockPatientBacking.selectedPatient eq null?false:true}" />
+
+					<p:outputLabel value="#{msg['bcp_demand_date']}"
+						for="calCurrentDate" />
+					<p:calendar label="#{msg['bcp_demand_date']}"
+						value="#{blockPatientBacking.crmBlockHistory.demandDate}"
+						id="calCurrentDate" showOn="button" navigator="true"
+						pattern="dd/MM/yyyy" readonlyInput="true"
+						maxdate="#{blockPatientBacking.today}" locale="es" required="true" />
+
+					<p:outputLabel value="#{msg['bcp_descr']}" for="txtDescr" />
+					<p:inputTextarea id="txtDescr" label="#{msg['bcp_descr']}"
+						value="#{blockPatientBacking.crmBlockHistory.description}"
+						required="true" rows="5" style="width:700px;" />
+
+					<p:outputLabel for="smcCampaignType" value="#{msg['cam_type']}" />
+					<p:selectManyCheckbox id="smcCampaignType" layout="grid"
+						columns="2" value="#{blockPatientBacking.selectedCampaignTypes}"
+						label="#{msg['cam_type']}">
+						<f:selectItem itemLabel="#{msg['cam_type_no_attendet']}"
+							itemValue="1" />
+						<f:selectItem itemLabel="#{msg['cam_type_confirmed']}"
+							itemValue="2" />
+						<f:selectItem itemLabel="#{msg['cam_type_control']}" itemValue="3" />
+						<f:selectItem itemLabel="#{msg['cam_type_medication']}"
+							itemValue="4" />
+						<f:selectItem itemLabel="#{msg['cam_type_reminder']}"
+							itemValue="5" />
+						<f:selectItem itemLabel="#{msg['cam_type_promo']}" itemValue="6" />
+					</p:selectManyCheckbox>
+
+				</h:panelGrid>
+
+			</h:form>
+
+			<h:form id="editForm">
+
+				<p:dialog header="#{msg['sal_patient']}" widgetVar="dlg2"
+					resizable="false" id="dialog2" showEffect="fade"
+					hideEffect="explode" modal="true" width="600">
+
+					<p:toolbar id="toolBar" style="width:100%">
+						<p:toolbarGroup align="left">
+							<p:commandButton value="#{msg['btn_search']}"
+								icon="ui-icon-search"
+								update="pnlTable2 recordTable2 btnAddPatient :form:growl"
+								action="#{blockPatientBacking.searchPatientAction}" />
+							<p:commandButton id="btnAddPatient" value="#{msg['btn_add']}"
+								icon="ui-icon-plusthick" update=":form:pnlDetail :form:toolBar"
+								oncomplete="handleComplete(xhr, status, args)"
+								actionListener="#{blockPatientBacking.addPatient}"
+								disabled="#{blockPatientBacking.disabledAddPatient}" />
+						</p:toolbarGroup>
+					</p:toolbar>
+
+					<h:panelGrid columns="2" width="100%">
+
+						<p:outputPanel id="customPanel">
+							<p:selectOneRadio id="customRadio"
+								value="#{blockPatientBacking.optionSearchPatient}"
+								layout="custom">
+								<p:ajax update="customPanel"
+									listener="#{blockPatientBacking.cleanPatientFields}" />
+								<f:selectItem itemLabel="#{msg['sal_key_press_doc']}"
+									itemValue="1" />
+								<f:selectItem itemLabel="#{msg['sal_key_press_nom']}"
+									itemValue="2" />
+								<f:selectItem itemLabel="#{msg['sal_key_press_tel']}"
+									itemValue="3" />
+							</p:selectOneRadio>
+
+							<h:panelGrid columns="3" width="100%">
+								<p:radioButton id="opt1" for="customRadio" itemIndex="0" />
+								<h:outputLabel for="opt1" value="#{msg['sal_key_press_doc']}" />
+								<p:inputText value="#{blockPatientBacking.docPatient}"
+									style="width:100%"
+									disabled="#{blockPatientBacking.optionSearchPatient ne 1}">
+									<pe:keyFilter regEx="/[\d]/" preventPaste="false" />
+								</p:inputText>
+
+								<p:radioButton id="opt2" for="customRadio" itemIndex="1" />
+								<h:outputLabel for="opt2" value="#{msg['sal_key_press_nom']}" />
+								<p:inputText value="#{blockPatientBacking.namePatient}"
+									style="width:100%"
+									disabled="#{blockPatientBacking.optionSearchPatient ne 2}">
+									<pe:keyFilter regEx="/[a-zA-Z ñ Ñ \s]/i" preventPaste="false" />
+								</p:inputText>
+
+								<p:radioButton id="opt3" for="customRadio" itemIndex="2" />
+								<h:outputLabel for="opt3" value="#{msg['sal_key_press_tel']}" />
+								<p:inputText value="#{blockPatientBacking.telPatient}"
+									style="width:100%"
+									disabled="#{blockPatientBacking.optionSearchPatient ne 3}">
+									<pe:keyFilter regEx="/[\d]/" preventPaste="false" />
+								</p:inputText>
+							</h:panelGrid>
+						</p:outputPanel>
+					</h:panelGrid>
+
+					<p:scrollPanel id="pnlTable2" style="width:580px;height:300px">
+						<p:dataTable id="recordTable2" var="rec"
+							value="#{blockPatientBacking.patientModel}" rowKey="#{rec.id}"
+							selection="#{blockPatientBacking.selectedPatientTemp}"
+							paginator="true" rows="15" style="width:570px"
+							emptyMessage="#{msg['glb_no_records_found']}">
+
+							<p:column selectionMode="single" style="width:18px" />
+
+							<p:column headerText="#{msg['pat_code_1']}">
+								<h:outputLabel value="#{rec.doc}" />
+							</p:column>
+
+							<p:column headerText="#{msg['pat_sap_code']}">
+								<h:outputLabel value="#{rec.codeSap}" />
+							</p:column>
+
+							<p:column headerText="#{msg['pat_names']}">
+								<h:outputLabel value="#{rec.names}" />
+							</p:column>
+
+							<p:column headerText="#{msg['pat_send_phone']}">
+								<h:outputLabel value="#{rec.phoneNumber} #{rec.cellNumber}" />
+							</p:column>
+
+						</p:dataTable>
+					</p:scrollPanel>
+
+				</p:dialog>
+
+			</h:form>
+
+		</p:panel>
+
+		<script type="text/javascript">
+			function handleComplete(xhr, status, args) {
+				if (args.validate) {
+					dlg2.hide();
+				} else {
+					dlgAddPatient.show();
+				}
+			}
+		</script>
+
+	</ui:define>
+</ui:composition>
+</html>

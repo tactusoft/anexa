@@ -1,0 +1,378 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:100%"
+			header="#{msg['title_appointment_search']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:growl id="growl" showDetail="true" />
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton id="btnSearchPatient"
+							value="#{msg['btn_search_app']}" icon="ui-icon-search"
+							update="selectedTable growl btnExport"
+							actionListener="#{appointmentSearchBacking.searchAppoinmentAction}" />
+						<p:commandButton id="btnExport" oncomplete="exportDlg.show();"
+							value="#{msg['btn_export']}" icon="ui-icon-disk"
+							disabled="#{appointmentSearchBacking.disabledExport}" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<h:panelGrid id="pnlDetail" columns="4" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+
+					<h:outputLabel value="#{msg['usr_branch']}" style="width:40%" />
+					<p:selectCheckboxMenu
+						value="#{appointmentSearchBacking.listBranchSelected}"
+						label="#{msg['usr_branch']}" filter="true"
+						filterMatchMode="contains" panelStyle="width:400px"
+						style="width:400px;">
+						<f:selectItems
+							value="#{appointmentSearchBacking.listCrmBranchByUser}" />
+						<p:ajax event="toggleSelect" update="selDoctor selProcedure"
+							listener="#{appointmentSearchBacking.addBranchNewToogle}" />
+						<p:ajax event="change" update="selDoctor selProcedure"
+							listener="#{appointmentSearchBacking.addBranchNewAction}" />
+					</p:selectCheckboxMenu>
+
+					<h:outputLabel value="#{msg['app_doctor']}" />
+					<p:selectOneMenu id="selDoctor" style="width:400px"
+						value="#{appointmentSearchBacking.idDoctor}">
+						<f:selectItem itemValue="-1" itemLabel="#{msg['glb_all_value']}" />
+						<f:selectItems value="#{appointmentSearchBacking.listDoctor}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['app_procedure_type']}"
+						style="width:40%" />
+					<p:selectCheckboxMenu id="selProcedure"
+						value="#{appointmentSearchBacking.listProcedureSelected}"
+						label="#{msg['app_procedure_type']}" filter="true"
+						style="width:400px" filterMatchMode="contains"
+						panelStyle="width:400px" required="true">
+						<f:selectItems value="#{appointmentSearchBacking.listProcedure}" />
+					</p:selectCheckboxMenu>
+
+					<h:outputLabel value="#{msg['src_state']}" />
+					<p:selectOneMenu value="#{appointmentSearchBacking.state}"
+						style="width:400px">
+						<f:selectItems value="#{appointmentSearchBacking.listStates}" />
+					</p:selectOneMenu>
+
+					<h:outputText value="Fecha de la cita: " />
+					<p:selectBooleanCheckbox value="#{appointmentSearchBacking.dates}">
+						<p:ajax update="calSD calED" />
+					</p:selectBooleanCheckbox>
+					<h:outputText value="" />
+					<h:outputText value="" />
+
+					<h:outputLabel value="#{msg['src_star_date']}" style="width:40%" />
+					<p:calendar id="calSD"
+						value="#{appointmentSearchBacking.startDate}"
+						label="#{msg['src_star_date']}" readonlyInput="true"
+						pattern="dd/MM/yyyy" showOn="button" navigator="true" locale="es"
+						disabled="#{not appointmentSearchBacking.dates}" />
+
+					<h:outputLabel value="#{msg['src_end_date']}" style="width:40%" />
+					<p:calendar id="calED" value="#{appointmentSearchBacking.endDate}"
+						label="#{msg['src_end_date']}" readonlyInput="true"
+						pattern="dd/MM/yyyy" showOn="button" navigator="true" locale="es"
+						disabled="#{not appointmentSearchBacking.dates}" />
+
+					<h:outputText value="Fechas Creación Cita: " />
+					<p:selectBooleanCheckbox
+						value="#{appointmentSearchBacking.datesCreate}">
+						<p:ajax update="calSDC caleEDC" />
+					</p:selectBooleanCheckbox>
+					<h:outputText value="" />
+					<h:outputText value="" />
+
+					<h:outputLabel value="#{msg['src_star_date']}" style="width:40%" />
+					<p:calendar id="calSDC"
+						value="#{appointmentSearchBacking.startDateCreate}"
+						label="#{msg['src_star_date']}" readonlyInput="true"
+						pattern="dd/MM/yyyy" showOn="button" navigator="true" locale="es"
+						disabled="#{not appointmentSearchBacking.datesCreate}" />
+
+					<h:outputLabel value="#{msg['src_end_date']}" style="width:40%" />
+					<p:calendar id="caleEDC"
+						value="#{appointmentSearchBacking.endDateCreate}"
+						label="#{msg['src_end_date']}" readonlyInput="true"
+						pattern="dd/MM/yyyy" showOn="button" navigator="true" locale="es"
+						disabled="#{not appointmentSearchBacking.datesCreate}" />
+
+					<h:outputText value="" />
+					<h:outputText value="" />
+
+				</h:panelGrid>
+
+				<p:spacer height="15" />
+
+				<p:dataTable id="selectedTable" var="rec"
+					value="#{appointmentSearchBacking.appointmentModel}"
+					rowKey="#{rec.code}" style="width:1100px;overflow:scroll;"
+					paginator="true" rows="20"
+					emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_num']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.code}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['pat_code_1']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.patCode}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['pat_surnames']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.patSurnames}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['pat_names']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.patFirstnames}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['pat_phone_number']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.patPhoneNumber}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['pat_cell_number']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.patCellNumber}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_date']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.startAppointmentDate}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['cst_tiempo_duracion']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.minutes}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_created_time']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.startAppointmentDate}">
+							<f:convertDateTime pattern="HH:mm" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_branch']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.branchName}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_doctor']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.doctorNames}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_procedure']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.prcDetName}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_untimely_1']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.untimely eq 1?'SI':'NO'}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_seller_group']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.publicityName}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_state']}" />
+						</f:facet>
+						<h:outputLabel
+							value="#{rec.state eq 1?'Agendada':rec.state eq 2?'Cancelada':rec.state eq 3?'Chequeada':rec.state eq 4?'Asistió a Consulta':'No Asistió a Consulta'}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_username_created']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.userCreateCode}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_created_date']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.dateCreate}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_created_time']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.dateCreate}">
+							<f:convertDateTime pattern="HH:mm" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_username_modified']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.userModifiedCode}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_modified_date']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.dateModified}">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_username_checked']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.userCheckedCode}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_checked_date']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.dateChecked}">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_username_rollback_check']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.userRollbackCheckedCode}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_rollback_check_date']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.rollbackCheckedDate}">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_reason_rollback']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.rollbackReason}" />
+					</p:column>
+
+				</p:dataTable>
+
+				<p:dialog id="exportDialog" widgetVar="exportDlg" modal="true"
+					closable="true" header="#{msg['btn_export']}">
+
+					<h:outputLabel value="#{msg['app_src_format']}"
+						style="font-size:medium;" />
+
+					<h:panelGrid width="100%" columns="4">
+
+						<h:commandLink>
+							<p:graphicImage id="imgExcel" value="../../images/excel.png"
+								alt="Excel" />
+							<p:dataExporter type="xls" target="selectedTable"
+								fileName="citas" />
+							<p:tooltip for="imgExcel" value="#{msg['btn_export_excel']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+						<h:commandLink>
+							<p:graphicImage id="imgCSV" value="../../images/csv.png" />
+							<p:dataExporter type="csv" target="selectedTable"
+								fileName="citas" />
+							<p:tooltip for="imgCSV" value="#{msg['btn_export_csv']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+						<h:commandLink>
+							<p:graphicImage id="imgXML" value="../../images/xml.png" />
+							<p:dataExporter type="xml" target="selectedTable"
+								fileName="citas" />
+							<p:tooltip for="imgXML" value="#{msg['btn_export_xml']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+						<h:commandLink action="#{appointmentSearchBacking.exportElastix}">
+							<p:graphicImage id="imgElastix" value="../../images/elastix.png" />
+							<p:tooltip for="imgElastix" value="#{msg['btn_export_elastix']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+					</h:panelGrid>
+				</p:dialog>
+
+			</h:form>
+
+		</p:panel>
+
+		<script type="text/javascript">
+			function handleComplete(xhr, status, args) {
+				if (args.validate) {
+					branchDlg.hide();
+				} else {
+					branchDlg.show();
+				}
+			}
+		</script>
+
+	</ui:define>
+</ui:composition>
+</html>

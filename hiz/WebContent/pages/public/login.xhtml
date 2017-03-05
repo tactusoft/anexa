@@ -1,0 +1,81 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+	<ui:define name="body">
+		<p:spacer height="200" />
+
+		<center>
+			<p:panel style="width:40%;height:200px"
+				header="#{msg['title_login']}">
+
+				<p:spacer height="5" />
+
+				<h:form id="form" prependId="false">
+
+					<p:growl id="growl" showDetail="true" />
+
+					<h:panelGrid columns="2">
+						<h:graphicImage value="/images/img_login.png" width="200"
+							rendered="false" />
+						<h:panelGrid columns="2">
+							<p:outputLabel value="#{msg['log_username']}" style="width:100%"
+								for="txtUsuario" />
+							<p:inputText id="txtUsuario" value="#{loginBacking.userName}"
+								style="width:100%" required="true"
+								label="#{msg['log_username']}" />
+							<p:outputLabel value="#{msg['log_password']}" style="width:100%"
+								for="txtPwd" />
+							<p:password id="txtPwd" value="#{loginBacking.password}"
+								style="width:100%" required="true"
+								label="#{msg['log_password']}" />
+
+						</h:panelGrid>
+
+						<f:facet name="footer">
+							<p:spacer />
+							<center>
+								<p:commandButton value="#{msg['btn_ok']}"
+									action="#{loginBacking.doLogin}" style="left: 0px; top: 0"
+									styleClass="rco-button" update="form"
+									oncomplete="handleComplete(xhr, status, args)" />
+							</center>
+						</f:facet>
+					</h:panelGrid>
+
+
+					<p:dialog id="dialogSessions" modal="true"
+						header="#{msg['title_login']}" severity="alert"
+						widgetVar="dlgSessions" width="300" resizable="false">
+						<h:panelGrid columns="1" width="100%">
+							<h:outputText value="#{msg['log_msg_max_session']}" />
+						</h:panelGrid>
+						<h:panelGrid columns="2" width="100%">
+							<p:commandButton value="Si"
+								action="#{loginBacking.expireSessions}"
+								process="@this,dialogSessions" oncomplete="dlgSessions.hide();" />
+							<p:commandButton value="No" process="@this,dialogSessions"
+								oncomplete="dlgSessions.hide();" />
+						</h:panelGrid>
+					</p:dialog>
+
+				</h:form>
+			</p:panel>
+		</center>
+
+		<script type="text/javascript">
+			function handleComplete(xhr, status, args) {
+				if (args.validate) {
+					dlgSessions.show();
+				}
+			};
+		</script>
+
+	</ui:define>
+</ui:composition>
+
+</html>

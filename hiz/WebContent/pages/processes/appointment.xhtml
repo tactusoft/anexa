@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:700px;"
+			header="#{msg['title_appointment']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:growl id="growl" showDetail="true" autoUpdate="true" />
+
+				<p:toolbar id="toolBar" style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_new']}" icon="ui-icon-document"
+							actionListener="#{appointmentBacking.newAction}" process="@this"
+							update="toolBar pnlDetail pnlDetail2 pnlDetail3 pnlDetail4" />
+						<p:commandButton value="#{msg['btn_add_patient']}"
+							icon="ui-icon-circle-check"
+							actionListener="#{appointmentBacking.newPatientAction}"
+							disabled="#{appointmentBacking.saved}" oncomplete="dlg2.show()"
+							update="toolBar pnlDetail pnlDetail2 pnlDetail3 pnlDetail4 :editForm:dialog2" />
+						<p:commandButton id="btnSearch" value="#{msg['btn_search_app']}"
+							icon="ui-icon-search" update=":editForm:dialog3 pnlDetail4"
+							action="#{appointmentBacking.searchAppointMentAction}"
+							disabled="#{appointmentBacking.disabledSearch or appointmentBacking.saved or appointmentBacking.selectedPatient eq null}"
+							oncomplete="dlg3.show()" />
+						<p:commandButton id="btnSaveApp" value="#{msg['btn_save']}"
+							icon="ui-icon-disk" update=":editForm:dialogConfirmation"
+							oncomplete="dlgConfirmation.show()"
+							action="#{appointmentBacking.validateAction}"
+							disabled="#{appointmentBacking.saved or appointmentBacking.selectedCandidate == null}" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<h:panelGrid id="pnlDetail" columns="2" width="100%"
+					columnClasses="width25per,width75per">
+
+					<h:outputLabel value="#{msg['pat_code']}"
+						rendered="#{appointmentBacking.selectedPatient eq null?false:true}" />
+					<p:inputText value="#{appointmentBacking.selectedPatient.doc}"
+						style="width:700px;background-color:#FFFF80;font-weight:bold;"
+						readonly="true"
+						rendered="#{appointmentBacking.selectedPatient eq null?false:true}" />
+
+					<h:outputLabel
+						value="#{appointmentBacking.selectedPatient.contact?msg['pat_phone_number']:msg['pat_sap_code']}"
+						rendered="#{appointmentBacking.selectedPatient eq null?false:true}" />
+					<p:inputText
+						value="#{appointmentBacking.selectedPatient.contact?appointmentBacking.selectedPatient.phoneNumber:appointmentBacking.selectedPatient.codeSap}"
+						style="width:700px;background-color:#FFFF80;font-weight:bold;"
+						readonly="true"
+						rendered="#{appointmentBacking.selectedPatient eq null?false:true}" />
+
+					<h:outputLabel value="#{msg['pat_names']}"
+						rendered="#{appointmentBacking.selectedPatient eq null?false:true}" />
+					<p:inputText id="txtPatientNames"
+						value="#{appointmentBacking.selectedPatient.names}"
+						style="width:700px;background-color:#FFFF80;font-weight:bold;"
+						readonly="true"
+						rendered="#{appointmentBacking.selectedPatient eq null?false:true}" />
+
+					<h:outputLabel value="#{msg['app_branch']}" />
+					<p:selectOneMenu style="width:700px" filter="true"
+						filterMatchMode="contains" panelStyle="width:700px"
+						value="#{appointmentBacking.idBranch}"
+						disabled="#{appointmentBacking.selectedPatient eq null}">
+						<f:selectItems value="#{appointmentBacking.listBranch}" />
+						<p:ajax update="pnlDetail pnlDetail2 pnlDetail4"
+							listener="#{appointmentBacking.handleBranchChange}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['app_procedure']}" />
+					<p:selectOneMenu id="selProcedure" style="width:700px"
+						value="#{appointmentBacking.idProcedureDetail}"
+						filterMatchMode="contains" panelStyle="width:700px"
+						disabled="#{appointmentBacking.selectedPatient eq null}"
+						filter="true">
+						<f:selectItems value="#{appointmentBacking.listProcedureDetail}" />
+						<p:ajax update="pnlDetail pnlDetail2 pnlDetail4 btnSearch"
+							listener="#{appointmentBacking.handleProcedureDetailChange}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['app_procedure_type']}"
+						rendered="#{appointmentBacking.dependProcedureDetail}" />
+					<p:selectOneMenu id="selProcedureDetail" style="width:700px"
+						value="#{appointmentBacking.idTherapyMaterials}"
+						filterMatchMode="contains" panelStyle="width:700px"
+						rendered="#{appointmentBacking.dependProcedureDetail}"
+						filter="true">
+						<f:selectItems value="#{appointmentBacking.listTherapyMaterials}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['app_seller_group']}" />
+					<p:selectOneMenu style="width:700px" filterMatchMode="contains"
+						filter="true" value="#{appointmentBacking.selectedWSGroupSellers}"
+						disabled="#{appointmentBacking.selectedPatient eq null}">
+						<f:selectItems value="#{appointmentBacking.listWSGroupSellers}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['app_procedure_search']}"
+						rendered="#{appointmentBacking.renderedDoctorWithoutTime}" />
+					<p:selectOneMenu id="selSearch" style="width:700px"
+						value="#{appointmentBacking.idSearch}"
+						rendered="#{appointmentBacking.renderedDoctorWithoutTime}"
+						disabled="#{appointmentBacking.selectedPatient eq null}">
+						<f:selectItems value="#{appointmentBacking.listSearch}" />
+						<p:ajax update="pnlDetail2 btnSearch"
+							listener="#{appointmentBacking.handleSearchChange}" />
+					</p:selectOneMenu>
+				</h:panelGrid>
+
+				<h:panelGrid id="pnlDetail2" columns="2" width="100%"
+					columnClasses="width25per,width75per">
+
+					<h:outputLabel id="lblCurrentDate" value="#{msg['app_date']}"
+						rendered="#{appointmentBacking.renderedForDate or appointmentBacking.renderedForDoctor}" />
+					<h:panelGrid columns="2">
+						<p:calendar value="#{appointmentBacking.currentDate}"
+							id="calCurrentDate" showOn="button" navigator="true"
+							pattern="dd/MM/yyyy" readonlyInput="true"
+							mindate="#{appointmentBacking.today}"
+							rendered="#{appointmentBacking.renderedForDate or appointmentBacking.renderedForDoctor}"
+							locale="es">
+							<p:ajax event="dateSelect"
+								listener="#{appointmentBacking.handleDateSelect}"
+								update="lblMessageDate" />
+						</p:calendar>
+						<h:outputLabel id="lblMessageDate" style="font-weight:bold;"
+							value="#{appointmentBacking.infoMessageDate}"
+							rendered="#{appointmentBacking.renderedForDate}" />
+					</h:panelGrid>
+
+					<h:outputLabel value="#{msg['app_doctor']}"
+						rendered="#{appointmentBacking.renderedForDoctor}" />
+					<p:selectOneMenu id="selDoctor" style="width:700px"
+						value="#{appointmentBacking.selected.crmDoctor.id}"
+						rendered="#{appointmentBacking.renderedForDoctor}">
+						<f:selectItems value="#{appointmentBacking.listDoctor}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['app_num']}"
+						rendered="#{appointmentBacking.renderedForDate or appointmentBacking.renderedForDoctor}" />
+					<p:selectOneMenu style="width:700px"
+						rendered="#{appointmentBacking.renderedForDate or appointmentBacking.renderedForDoctor}"
+						value="#{appointmentBacking.appointmentsNumber}">
+						<f:selectItem itemLabel="#{msg['app_first_10_app']}"
+							itemValue="10" />
+						<f:selectItem itemLabel="#{msg['app_first_20_app']}"
+							itemValue="20" />
+						<f:selectItem itemLabel="#{msg['app_first_30_app']}"
+							itemValue="30" />
+						<f:selectItem itemLabel="#{msg['app_first_50_app']}"
+							itemValue="50" />
+						<f:selectItem itemLabel="#{msg['app_first_70_app']}"
+							itemValue="70" />
+					</p:selectOneMenu>
+
+				</h:panelGrid>
+
+				<h:panelGrid id="pnlDetail3" columns="2" width="100%"
+					columnClasses="width25per,width75per">
+					<h:outputLabel value="#{msg['app_obs']}" />
+					<p:inputTextarea value="#{appointmentBacking.selected.obs}"
+						style="width:700px" rows="3"
+						disabled="#{appointmentBacking.selectedPatient eq null}" />
+				</h:panelGrid>
+
+				<h:panelGrid id="pnlDetail4" width="100%">
+					<p:spacer height="5" />
+					<h:outputLabel
+						style="text-align:center;font-size:large;font-weight:bold;"
+						value="#{appointmentBacking.detSelectedCandidate}" />
+
+				</h:panelGrid>
+
+			</h:form>
+
+			<h:form id="editForm">
+
+				<p:dialog id="conffirmation" widgetVar="dlg"
+					header="#{msg['app_title']}" width="450" resizable="false"
+					showEffect="clip" hideEffect="clip" modal="true">
+
+					<p:ajax event="close"
+						update=":form:pnlDetail :form:pnlDetail2 :form:pnlDetail3 :form:pnlDetail4 :form:toolBar"
+						listener="#{appointmentBacking.handleClose}" />
+
+					<h:panelGrid width="100%">
+						<h:outputLabel value="#{appointmentBacking.infoMessage}"
+							style="text-align:center;font-size:large;font-weight:bold;" />
+						<p:spacer height="5" rendered="#{appointmentBacking.saved}" />
+						<h:outputLabel value="#{appointmentBacking.detSelectedCandidate}"
+							rendered="#{appointmentBacking.saved}"
+							style="text-align:center;font-size:large;font-weight:bold;" />
+					</h:panelGrid>
+
+				</p:dialog>
+
+				<p:dialog header="#{msg['sal_patient']}" widgetVar="dlg2"
+					resizable="false" id="dialog2" showEffect="fade"
+					hideEffect="explode" modal="true" width="600">
+
+					<p:toolbar id="toolBar" style="width:100%">
+						<p:toolbarGroup align="left">
+							<p:commandButton value="#{msg['btn_search']}"
+								icon="ui-icon-search"
+								update="pnlTable2 recordTable2 btnAddPatient :form:growl"
+								action="#{appointmentBacking.searchPatientAction}" />
+							<p:commandButton id="btnAddPatient" value="#{msg['btn_add']}"
+								icon="ui-icon-plusthick"
+								update=":form:pnlDetail :form:pnlDetail2 :form:pnlDetail3 :form:toolBar"
+								oncomplete="handleComplete(xhr, status, args)"
+								actionListener="#{appointmentBacking.addPatient}"
+								disabled="#{appointmentBacking.disabledAddPatient}" />
+						</p:toolbarGroup>
+					</p:toolbar>
+
+					<h:panelGrid columns="2" width="100%">
+
+						<p:outputPanel id="customPanel">
+							<p:selectOneRadio id="customRadio"
+								value="#{appointmentBacking.optionSearchPatient}"
+								layout="custom">
+								<p:ajax update="customPanel"
+									listener="#{appointmentBacking.cleanPatientFields}" />
+								<f:selectItem itemLabel="#{msg['sal_key_press_doc']}"
+									itemValue="1" />
+								<f:selectItem itemLabel="#{msg['sal_key_press_nom']}"
+									itemValue="2" />
+								<f:selectItem itemLabel="#{msg['sal_key_press_tel']}"
+									itemValue="3" />
+							</p:selectOneRadio>
+
+							<h:panelGrid columns="3" width="100%">
+								<p:radioButton id="opt1" for="customRadio" itemIndex="0" />
+								<h:outputLabel for="opt1" value="#{msg['sal_key_press_doc']}" />
+								<p:inputText value="#{appointmentBacking.docPatient}"
+									style="width:100%"
+									disabled="#{appointmentBacking.optionSearchPatient ne 1}">
+									<pe:keyFilter regEx="/[\d]/" preventPaste="false" />
+								</p:inputText>
+
+								<p:radioButton id="opt2" for="customRadio" itemIndex="1" />
+								<h:outputLabel for="opt2" value="#{msg['sal_key_press_nom']}" />
+								<p:inputText value="#{appointmentBacking.namePatient}"
+									style="width:100%"
+									disabled="#{appointmentBacking.optionSearchPatient ne 2}">
+									<pe:keyFilter regEx="/[a-zA-Z ñ Ñ \s]/i" preventPaste="false" />
+								</p:inputText>
+
+								<p:radioButton id="opt3" for="customRadio" itemIndex="2" />
+								<h:outputLabel for="opt3" value="#{msg['sal_key_press_tel']}" />
+								<p:inputText value="#{appointmentBacking.telPatient}"
+									style="width:100%"
+									disabled="#{appointmentBacking.optionSearchPatient ne 3}">
+									<pe:keyFilter regEx="/[\d]/" preventPaste="false" />
+								</p:inputText>
+							</h:panelGrid>
+						</p:outputPanel>
+					</h:panelGrid>
+
+					<p:scrollPanel id="pnlTable2" style="width:580px;height:300px">
+						<p:dataTable id="recordTable2" var="rec"
+							value="#{appointmentBacking.patientModel}" rowKey="#{rec.id}"
+							selection="#{appointmentBacking.selectedPatientTemp}"
+							paginator="true" rows="15" style="width:570px"
+							emptyMessage="#{msg['glb_no_records_found']}">
+
+							<p:column selectionMode="single" style="width:18px" />
+
+							<p:column headerText="#{msg['pat_code_1']}">
+								<h:outputLabel value="#{rec.doc}" />
+							</p:column>
+
+							<p:column headerText="#{msg['pat_sap_code']}">
+								<h:outputLabel value="#{rec.codeSap}" />
+							</p:column>
+
+							<p:column headerText="#{msg['pat_names']}">
+								<h:outputLabel value="#{rec.names}" />
+							</p:column>
+
+							<p:column headerText="#{msg['pat_send_phone']}">
+								<h:outputLabel value="#{rec.phoneNumber} #{rec.cellNumber}" />
+							</p:column>
+
+						</p:dataTable>
+					</p:scrollPanel>
+
+				</p:dialog>
+
+				<p:dialog header="#{msg['app_avalaible']}" widgetVar="dlg3"
+					resizable="false" id="dialog3" showEffect="fade"
+					hideEffect="explode" modal="true" width="700">
+
+					<h:outputText value="#{appointmentBacking.infoMessage}"
+						style="font-size:large;font-weight:bold;" />
+
+					<p:spacer rendered="#{appointmentBacking.infoMessage ne null}" />
+
+					<p:dataTable id="selectedTable" var="rec"
+						value="#{appointmentBacking.modelAppointment}" rowKey="#{rec.id}"
+						style="width:100%"
+						selection="#{appointmentBacking.selectedCandidateTemp}"
+						paginator="true" rows="10"
+						emptyMessage="#{msg['glb_no_records_found']}">
+
+						<p:column selectionMode="single" style="width:18px" />
+
+						<p:column headerText="#{msg['app_date']}">
+							<h:outputLabel value="#{rec.startDate}">
+								<f:convertDateTime pattern="dd/MM/yyyy" />
+							</h:outputLabel>
+						</p:column>
+
+						<p:column headerText="#{msg['app_start_hour']}">
+							<h:outputLabel value="#{rec.startDate}">
+								<f:convertDateTime pattern="HH:mm" />
+							</h:outputLabel>
+						</p:column>
+
+						<p:column headerText="#{msg['app_end_hour']}">
+							<h:outputLabel value="#{rec.endDate}">
+								<f:convertDateTime pattern="HH:mm" />
+							</h:outputLabel>
+						</p:column>
+
+						<p:column headerText="#{msg['app_doctor']}" rendered="false">
+							<h:outputLabel value="#{rec.doctor.names}" />
+						</p:column>
+
+						<f:facet name="footer">
+							<p:commandButton value="#{msg['btn_add_app']}"
+								action="#{appointmentBacking.addAppointmentAction}"
+								oncomplete="dlg3.hide()" update=":form:pnlDetail4 :form:toolBar" />
+						</f:facet>
+
+					</p:dataTable>
+
+				</p:dialog>
+
+				<p:dialog id="dialogConfirmation" modal="true"
+					header="#{msg['title_appointment']}" severity="alert"
+					widgetVar="dlgConfirmation" width="450" resizable="false">
+
+					<h:outputLabel value="#{msg['glb_question']}"
+						rendered="#{appointmentBacking.validate}" />
+
+					<h:panelGrid width="100%">
+						<h:outputLabel value="#{appointmentBacking.infoMessage}"
+							rendered="#{not appointmentBacking.validate}"
+							style="text-align:center;font-size:large;font-weight:bold;" />
+						<p:spacer height="5" rendered="#{not appointmentBacking.validate}" />
+						<h:outputLabel value="#{appointmentBacking.detSelectedCandidate}"
+							rendered="#{appointmentBacking.validate}"
+							style="text-align:center;font-weight:bold;" />
+					</h:panelGrid>
+
+					<f:facet name="footer">
+
+						<p:commandButton value="#{msg['btn_ok']}"
+							oncomplete="dlgConfirmation.hide();dlg.show();"
+							update=":form:toolBar conffirmation"
+							action="#{appointmentBacking.saveAction}"
+							rendered="#{appointmentBacking.validate}">
+							<f:param name="APP_TYPE" value="ORDINARY" />
+						</p:commandButton>
+
+						<p:commandButton rendered="#{appointmentBacking.validate}"
+							value="#{msg['btn_cancel']}" onclick="dlgConfirmation.hide()"
+							type="button" />
+
+					</f:facet>
+
+				</p:dialog>
+
+			</h:form>
+
+		</p:panel>
+
+		<script type="text/javascript">
+			function handleComplete(xhr, status, args) {
+				if (args.validate) {
+					dlg2.hide();
+				} else {
+					dlgAddPatient.show();
+				}
+			}
+
+			window.onbeforeunload = function() {
+				var result = jQuery(PrimeFaces.escapeClientId('form:txtPatientNames')).val();
+				if(result) {
+					return false;
+				}
+			};
+		</script>
+
+	</ui:define>
+</ui:composition>
+</html>

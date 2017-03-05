@@ -1,0 +1,239 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:100%;" header="#{msg['title_user']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_new']}" icon="ui-icon-document"
+							action="#{userBacking.newAction}" oncomplete="dlg.show()"
+							update=":editForm:dialog" />
+						<p:commandButton value="#{msg['btn_edit']}" icon="ui-icon-pencil"
+							oncomplete="dlg.show()" update=":editForm:dialog"
+							actionListener="#{userBacking.generateListAction}" />
+						<p:commandButton value="#{msg['btn_copy_user']}"
+							icon="ui-icon-copy" oncomplete="dlg.show()"
+							update=":editForm:dialog"
+							actionListener="#{userBacking.copyUserAction}" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<p:dataTable id="recordTable" var="rec" value="#{userBacking.model}"
+					rowKey="#{rec.id}" selection="#{userBacking.selected}"
+					paginator="true" rows="15" style="width:100%"
+					emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column selectionMode="single" style="width:18px" />
+
+					<p:column headerText="#{msg['usr_username']}"
+						filterBy="#{rec.username}" filterMatchMode="contains">
+						<h:outputLabel value="#{rec.username}" />
+					</p:column>
+
+					<p:column headerText="#{msg['usr_names']}" filterBy="#{rec.names}"
+						filterMatchMode="contains">
+						<h:outputLabel value="#{rec.names}" />
+					</p:column>
+
+					<p:column headerText="#{msg['usr_surnames']}"
+						filterBy="#{rec.surnames}" filterMatchMode="contains">
+						<h:outputLabel value="#{rec.surnames}" />
+					</p:column>
+
+					<p:column headerText="#{msg['usr_departament']}">
+						<h:outputLabel value="#{rec.crmDepartment.name}" />
+					</p:column>
+
+					<p:column headerText="#{msg['glb_state']}">#{rec.state eq 1?msg['glb_state_active']:msg['glb_state_inactive']}</p:column>
+
+				</p:dataTable>
+
+			</h:form>
+
+		</p:panel>
+
+		<h:form id="editForm">
+
+			<p:growl id="growl" showDetail="true" />
+
+			<p:dialog header="#{msg['msg_detail']}" widgetVar="dlg"
+				resizable="false" id="dialog" showEffect="fade" hideEffect="explode"
+				modal="true" width="920">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_save']}" icon="ui-icon-disk"
+							action="#{userBacking.saveAction}"
+							update="growl :form:recordTable" />
+						<p:commandButton value="#{msg['btn_close']}"
+							icon="ui-icon-closethick" update="growl :form:recordTable"
+							process="@none" oncomplete="dlg.hide()" />
+						<p:commandButton value="#{msg['btn_refresh_key']}"
+							icon="ui-icon-key"
+							actionListener="#{userBacking.refreshPasswordAction}"
+							update="growl" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<p:scrollPanel style="width:900px;height:600px;">
+					<h:panelGrid columns="4" cellpadding="4" style="margin:0 auto;"
+						width="100%">
+
+						<h:outputLabel value="#{msg['usr_username']}" />
+						<p:inputText value="#{userBacking.selected.username}"
+							style="width:250px" label="#{msg['usr_username']}"
+							required="true"
+							readonly="#{userBacking.selected.id ne null?true:false}" />
+
+						<h:outputLabel value="#{msg['usr_doc']}" />
+						<p:inputText value="#{userBacking.selected.doc}"
+							style="width:250px" label="#{msg['usr_doc']}" required="true"
+							maxlength="45" />
+
+						<h:outputLabel value="#{msg['usr_names']}" />
+						<p:inputText value="#{userBacking.selected.names}"
+							style="width:250px" label="#{msg['usr_names']}" required="true"
+							maxlength="255" />
+
+						<h:outputLabel value="#{msg['usr_surnames']}" />
+						<p:inputText value="#{userBacking.selected.surnames}"
+							style="width:250px" label="#{msg['usr_surnames']}"
+							required="true" maxlength="255" />
+
+						<h:outputLabel value="#{msg['usr_email']}" />
+						<p:inputText value="#{userBacking.selected.email}"
+							style="width:250px" label="#{msg['usr_email']}" required="true"
+							validator="emailValidator" />
+
+						<h:outputLabel value="#{msg['usr_phone']}" />
+						<p:inputText value="#{userBacking.selected.phone}"
+							style="width:250px" label="#{msg['usr_phone']}" />
+
+						<h:outputLabel value="#{msg['usr_ext']}" />
+						<p:inputText value="#{userBacking.selected.extension}"
+							style="width:250px" label="#{msg['usr_ext']}" />
+
+						<h:outputLabel value="#{msg['usr_ext_agent']}" />
+						<p:inputText value="#{userBacking.selected.extensionAgent}"
+							style="width:250px" label="#{msg['usr_ext_agent']}" maxlength="5" />
+
+						<h:outputLabel value="#{msg['usr_departament']}" />
+						<p:selectOneMenu value="#{userBacking.selected.crmDepartment.id}"
+							style="width:250px">
+							<f:selectItems value="#{userBacking.listDepartment}" />
+						</p:selectOneMenu>
+
+						<h:outputLabel value="#{msg['usr_role_principal']}" />
+						<p:selectOneMenu value="#{userBacking.rolePrincipal}"
+							style="width:250px">
+							<p:ajax update="lblSpeciality cmbSpeciality" />
+							<f:selectItem itemValue="USER"
+								itemLabel="#{msg['user_role_principal_user']}" />
+							<f:selectItem itemValue="DOCTOR"
+								itemLabel="#{msg['user_role_principal_doctor']}" />
+							<f:selectItem itemValue="NURSE"
+								itemLabel="#{msg['user_role_principal_nurse']}" />
+							<f:selectItem itemValue="NURSE_AUX"
+								itemLabel="#{msg['user_role_principal_nurse_aux']}" />
+							<f:selectItem itemValue="CONSULTANT"
+								itemLabel="#{msg['user_role_principal_consultant']}" />
+							<f:selectItem itemValue="BEAUTICIAN"
+								itemLabel="#{msg['user_role_principal_beautician']}" />
+						</p:selectOneMenu>
+
+						<h:outputLabel id="lblSpeciality" value="#{msg['doc_speciality']}" />
+						<p:selectOneMenu id="cmbSpeciality"
+							value="#{userBacking.idSpeciality}" style="width:250px"
+							disabled="#{userBacking.rolePrincipal ne 'DOCTOR' and userBacking.rolePrincipal ne 'CONSULTANT' and userBacking.rolePrincipal ne 'BEAUTICIAN'?true:false}">
+							<f:selectItems value="#{userBacking.listCrmSpeciality}" />
+						</p:selectOneMenu>
+
+						<h:outputLabel value="#{msg['glb_state']}"
+							rendered="#{userBacking.selected.id!=null?true:false}" />
+						<p:selectOneMenu value="#{userBacking.selected.state}"
+							rendered="#{userBacking.selected.id!=null?true:false}"
+							style="width:250px">
+							<f:selectItem itemValue="1"
+								itemLabel="#{msg['glb_state_active']}" />
+							<f:selectItem itemValue="0"
+								itemLabel="#{msg['glb_state_inactive']}" />
+						</p:selectOneMenu>
+
+						<h:outputLabel id="lblBusinessGroup"
+							value="#{msg['usr_business_group']}" />
+						<p:selectOneMenu id="cmbBusinessGroup"
+							label="#{msg['usr_business_group']}"
+							value="#{userBacking.idBusinessGroup}" style="width:250px">
+							<p:ajax update="pclBranchs"
+								listener="#{userBacking.handleBGChange}" />
+							<f:selectItems value="#{userBacking.listCrmBusinessGroup}" />
+						</p:selectOneMenu>
+
+					</h:panelGrid>
+
+					<p:spacer height="10" />
+
+
+					<h:panelGrid columns="2" width="100%">
+
+						<p:pickList id="pclBranchs" var="row"
+							value="#{userBacking.listBranchUser}" converter="branchConverter"
+							itemValue="#{row}" itemLabel="#{row.name} (#{row.society})"
+							showSourceFilter="true" showTargetFilter="true"
+							filterMatchMode="contains">
+
+							<f:facet name="sourceCaption">#{msg['usr_branch']}</f:facet>
+							<f:facet name="targetCaption">#{msg['glb_target_caption']}</f:facet>
+						</p:pickList>
+
+						<p:pickList var="row" value="#{userBacking.listRole}"
+							converter="roleConverter" itemValue="#{row}"
+							itemLabel="#{row.name}" showSourceFilter="true"
+							showTargetFilter="true" filterMatchMode="contains">
+
+							<f:facet name="sourceCaption">#{msg['usr_roles']}</f:facet>
+							<f:facet name="targetCaption">#{msg['glb_target_caption']}</f:facet>
+						</p:pickList>
+
+						<p:pickList var="row" value="#{userBacking.listUserProfile}"
+							converter="profileConverter" itemValue="#{row}"
+							itemLabel="#{row.code}" showSourceFilter="true"
+							showTargetFilter="true" filterMatchMode="contains">
+
+							<f:facet name="sourceCaption">#{msg['usr_profile']}</f:facet>
+							<f:facet name="targetCaption">#{msg['glb_target_caption']}</f:facet>
+						</p:pickList>
+
+						<p:pickList var="row" value="#{userBacking.listBranchPostsale}"
+							converter="branchConverter" itemValue="#{row}"
+							itemLabel="#{row.name} (#{row.society})" showSourceFilter="true"
+							showTargetFilter="true" filterMatchMode="contains">
+
+							<f:facet name="sourceCaption">#{msg['usr_branch_postsale']}</f:facet>
+							<f:facet name="targetCaption">#{msg['glb_target_caption']}</f:facet>
+						</p:pickList>
+					</h:panelGrid>
+				</p:scrollPanel>
+
+			</p:dialog>
+		</h:form>
+
+	</ui:define>
+</ui:composition>
+</html>

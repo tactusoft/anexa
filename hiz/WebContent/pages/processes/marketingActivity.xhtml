@@ -1,0 +1,161 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:600px;"
+			header="#{msg['title_marketing_activity']}">
+
+			<p:spacer height="10" />
+
+			<h:form id="form">
+
+				<p:toolbar id="toolbar" style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_new']}" icon="ui-icon-document"
+							action="#{marketingActivityBacking.newAction}"
+							oncomplete="dlg.show()" update=":editForm:pnlDetail" />
+						<p:commandButton value="#{msg['btn_edit']}" icon="ui-icon-pencil"
+							oncomplete="dlg.show()" update=":editForm:pnlDetail"
+							action="#{marketingActivityBacking.editAction}"
+							disabled="#{empty marketingActivityBacking.list}" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<p:dataTable id="recordTable" var="rec"
+					value="#{marketingActivityBacking.model}" rowKey="#{rec.id}"
+					selection="#{marketingActivityBacking.selected}" paginator="true"
+					rows="10" style="width:100%"
+					emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column selectionMode="single" style="width:18px" />
+
+					<p:column headerText="#{msg['acm_name']}">
+						<h:outputLabel value="#{rec.name}" />
+					</p:column>
+
+					<p:column headerText="#{msg['acm_city']}">
+						<h:outputLabel value="#{rec.crmCity.name}" />
+					</p:column>
+
+					<p:column headerText="#{msg['acm_start_date']}">
+						<h:outputLabel value="#{rec.startDate}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column headerText="#{msg['acc_phone']}">
+						<h:outputLabel value="#{rec.finishDate}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:outputLabel>
+					</p:column>
+
+				</p:dataTable>
+
+			</h:form>
+
+		</p:panel>
+
+		<h:form id="editForm">
+
+			<p:growl id="growl" showDetail="true" />
+
+			<p:dialog header="#{msg['msg_detail']}" widgetVar="dlg"
+				resizable="false" id="dialogDetail" showEffect="fade"
+				hideEffect="explode" modal="true" width="500">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_save']}" icon="ui-icon-disk"
+							action="#{marketingActivityBacking.saveAction}"
+							update="growl :form:recordTable :form:toolbar"
+							oncomplete="handleLoginRequest(xhr, status, args);" />
+						<p:commandButton value="#{msg['btn_close']}"
+							icon="ui-icon-closethick" update="growl :form:recordTable"
+							process="@none" oncomplete="dlg.hide()" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<h:panelGrid id="pnlDetail" columns="2" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+
+					<h:outputLabel value="#{msg['acm_name']}" />
+					<p:inputText value="#{marketingActivityBacking.selected.name}"
+						style="width:100%" label="#{msg['acm_name']}" required="true"
+						maxlength="255" />
+
+					<h:outputLabel value="#{msg['acm_start_date']}" style="width:40%" />
+					<p:calendar value="#{marketingActivityBacking.selected.startDate}"
+						label="#{msg['acm_start_date']}" readonlyInput="true"
+						pattern="dd/MM/yyyy" showOn="button" navigator="true" locale="es"
+						mindate="#{marketingActivityBacking.today}">
+						<p:ajax event="dateSelect" update="calfinishDate" />
+					</p:calendar>
+
+					<h:outputLabel value="#{msg['acm_finish_date']}" style="width:40%" />
+					<p:calendar id="calfinishDate"
+						value="#{marketingActivityBacking.selected.finishDate}"
+						label="#{msg['acm_finish_date']}" readonlyInput="true"
+						pattern="dd/MM/yyyy" showOn="button" navigator="true" locale="es"
+						mindate="#{marketingActivityBacking.selected.startDate}" />
+
+					<h:outputText value="#{msg['pat_country']}" />
+					<p:selectOneMenu value="#{marketingActivityBacking.idCountry}"
+						label="#{msg['pat_country']}" style="width:100%" required="true"
+						converter="entityConverter" filter="true"
+						filterMatchMode="contains">
+						<p:ajax update="selRegion selCity"
+							listener="#{marketingActivityBacking.handleCountryChange}" />
+						<f:selectItems value="#{marketingActivityBacking.listCountry}" />
+					</p:selectOneMenu>
+
+					<h:outputText value="#{msg['pat_region']}" />
+					<p:selectOneMenu id="selRegion"
+						value="#{marketingActivityBacking.idRegion}"
+						label="#{msg['pat_region']}" style="width:100%" required="true"
+						converter="entityConverter" filter="true"
+						filterMatchMode="contains">
+						<p:ajax update="selCity"
+							listener="#{marketingActivityBacking.handleRegionChange}" />
+						<f:selectItems value="#{marketingActivityBacking.listRegion}" />
+					</p:selectOneMenu>
+
+					<h:outputText value="#{msg['acm_city']}" />
+					<p:selectOneMenu id="selCity"
+						value="#{marketingActivityBacking.idCity}"
+						label="#{msg['acm_city']}" style="width:100%" required="true"
+						converter="entityConverter" filter="true"
+						filterMatchMode="contains">
+						<f:selectItems value="#{marketingActivityBacking.listCity}" />
+					</p:selectOneMenu>
+
+				</h:panelGrid>
+
+			</p:dialog>
+		</h:form>
+
+		<script type="text/javascript">
+			function handleLoginRequest(xhr, status, args) {
+				if (args.validationFailed || !args.saved) {
+					/*jQuery('#:editForm:dialogDetail').effect("shake", {
+						times : 3
+					}, 100);*/
+				} else {
+					dlg.hide();
+				}
+			}
+		</script>
+
+	</ui:define>
+</ui:composition>
+</html>

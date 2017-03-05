@@ -1,0 +1,228 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:100%;"
+			header="#{msg['title_doctor']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:toolbar id="toolBar" style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_edit']}" icon="ui-icon-pencil"
+							oncomplete="dlg.show()" update=":editForm:dialog"
+							actionListener="#{doctorBacking.generateListAction}" />
+						<p:commandButton value="#{msg['btn_delete']}"
+							icon="ui-icon-closethick" oncomplete="confirmDlg.show()" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<p:dataTable id="recordTable" var="rec" widgetVar="recordTbl"
+					value="#{doctorBacking.model}" rowKey="#{rec.id}"
+					selection="#{doctorBacking.selected}" paginator="true" rows="15"
+					style="width:100%" emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column selectionMode="single" style="width:18px" />
+
+					<p:column headerText="#{msg['doc_names']}" filterBy="#{rec.names}"
+						filterMatchMode="contains">
+						<h:outputLabel value="#{rec.names}" />
+					</p:column>
+
+					<p:column headerText="#{msg['doc_speciality']}">
+						<h:outputLabel value="#{rec.crmSpeciality.description}" />
+					</p:column>
+
+					<p:column headerText="#{msg['glb_state']}">
+						<h:outputLabel
+							value="#{rec.state==1?msg['glb_state_active']:msg['glb_state_inactive']}" />
+					</p:column>
+
+				</p:dataTable>
+
+				<p:confirmDialog id="confirmDialog" message="#{msg['glb_question']}"
+					header="#{msg['title_app']}" severity="alert"
+					widgetVar="confirmDlg">
+
+					<p:commandButton id="confirm" value="#{msg['glb_state_yes']}"
+						oncomplete="confirmDlg.hide()"
+						update="recordTable :editForm:growl"
+						actionListener="#{doctorBacking.removeAction}"
+						style="font-weight:bold;" />
+					<p:commandButton id="decline" value="#{msg['glb_state_no']}"
+						onclick="confirmDlg.hide()" type="button" />
+
+				</p:confirmDialog>
+
+			</h:form>
+
+		</p:panel>
+
+		<h:form id="editForm">
+
+			<p:growl id="growl" showDetail="true" />
+
+			<p:dialog header="#{msg['msg_detail']}" widgetVar="dlg"
+				resizable="false" id="dialog" showEffect="fade" hideEffect="explode"
+				modal="true" width="1000">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_new']}" icon="ui-icon-document"
+							action="#{doctorBacking.newAction}"
+							update=":editForm:dialog :editForm:recordTableDetail" />
+						<p:commandButton value="#{msg['btn_save']}" icon="ui-icon-disk"
+							action="#{doctorBacking.saveAction}"
+							update="growl :form:recordTable" />
+						<p:commandButton value="#{msg['btn_close']}"
+							icon="ui-icon-closethick" update="growl :form:recordTable"
+							process="@none" oncomplete="dlg.hide()" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<h:panelGrid id="pnlDetail" columns="2" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+					<h:outputLabel value="#{msg['doc_select']}"
+						rendered="#{doctorBacking.selected.id eq null?true:false}" />
+					<p:selectOneMenu style="width:500px" required="true"
+						label="#{msg['doc_select']}"
+						value="#{doctorBacking.selectedWSDoctor}"
+						rendered="#{doctorBacking.selected.id eq null?true:false}">
+						<f:selectItems value="#{doctorBacking.listWSDoctor}" />
+					</p:selectOneMenu>
+				</h:panelGrid>
+
+				<h:panelGrid id="pnlDetail2" columns="4" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+
+					<h:outputLabel value="#{msg['doc_code']}"
+						rendered="#{doctorBacking.selected.id ne null?true:false}" />
+					<p:inputText value="#{doctorBacking.selected.code}"
+						style="width:250px" label="#{msg['doc_code']}" required="true"
+						rendered="#{doctorBacking.selected.id ne null?true:false}"
+						readonly="true" />
+
+					<h:outputLabel value="#{msg['doc_names']}"
+						rendered="#{doctorBacking.selected.id ne null?true:false}" />
+					<p:inputText value="#{doctorBacking.selected.names}"
+						style="width:250px" label="#{msg['doc_names']}"
+						rendered="#{doctorBacking.selected.id ne null?true:false}"
+						readonly="true" />
+
+					<h:outputLabel value="#{msg['doc_medical_license']}" />
+					<p:inputText value="#{doctorBacking.selected.medicalLicense}"
+						style="width:250px" label="#{msg['doc_medical_license']}"
+						required="true" maxlength="100" />
+
+					<h:outputLabel value="#{msg['doc_university']}" />
+					<p:inputText value="#{doctorBacking.selected.university}"
+						style="width:250px" label="#{msg['doc_university']}"
+						maxlength="1000" />
+
+					<h:outputLabel value="#{msg['doc_speciality']}" />
+					<p:selectOneMenu value="#{doctorBacking.selected.crmSpeciality.id}"
+						style="width:250px">
+						<f:selectItems value="#{doctorBacking.listCrmSpeciality}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['glb_state']}"
+						rendered="#{doctorBacking.selected.id!=null?true:false}" />
+					<p:selectOneMenu value="#{doctorBacking.selected.state}"
+						style="width:250px"
+						rendered="#{doctorBacking.selected.id!=null?true:false}">
+						<f:selectItem itemValue="1" itemLabel="#{msg['glb_state_active']}" />
+						<f:selectItem itemValue="0"
+							itemLabel="#{msg['glb_state_inactive']}" />
+					</p:selectOneMenu>
+
+				</h:panelGrid>
+
+
+				<p:spacer width="5" />
+				<p:separator style="width:100%" />
+				<p:spacer width="5" />
+
+				<h:panelGrid columns="9" cellpadding="4" style="margin:0 auto;"
+					width="100%">
+
+					<h:outputLabel value="#{msg['doc_branch']}" />
+					<p:selectOneMenu value="#{doctorBacking.idBranch}"
+						style="width:200px" required="true" label="#{msg['doc_branch']}">
+						<f:selectItems value="#{doctorBacking.listCrmBranchByUser}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['doc_day']}" style="width:100%" />
+					<p:selectOneMenu value="#{doctorBacking.idDay}" style="width:200px">
+						<f:selectItems value="#{doctorBacking.listDays}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['doc_star_hour']}" style="width:100%" />
+					<p:inputMask mask="99:99" value="#{doctorBacking.startHour}"
+						style="width:50px" />
+
+					<h:outputLabel value="#{msg['doc_end_hour']}" style="width:100%" />
+					<p:inputMask mask="99:99" value="#{doctorBacking.endHour}"
+						style="width:50px" />
+
+					<p:commandButton value="#{msg['btn_add']}"
+						action="#{doctorBacking.addScheduleAction}"
+						update="growl recordTableDetail" />
+
+				</h:panelGrid>
+
+				<p:dataTable id="recordTableDetail" var="rec"
+					value="#{doctorBacking.modelDoctorSchedule}" rowKey="#{rec.id}"
+					selection="#{doctorBacking.selectedDoctorSchedule}"
+					paginator="true" rows="7" style="width:100%"
+					emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column selectionMode="multiple" style="width:18px" />
+
+					<p:column headerText="#{msg['doc_branch']}">
+						<h:outputLabel value="#{rec.crmBranch.name}" />
+					</p:column>
+
+					<p:column headerText="#{msg['doc_day']}">
+						<h:outputLabel value="#{rec.detDay}" />
+					</p:column>
+
+					<p:column headerText="#{msg['doc_star_hour']}">
+						<h:outputLabel value="#{rec.startHour}">
+							<f:convertDateTime pattern="HH:mm" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column headerText="#{msg['doc_end_hour']}">
+						<h:outputLabel value="#{rec.endHour}">
+							<f:convertDateTime pattern="HH:mm" />
+						</h:outputLabel>
+					</p:column>
+
+					<f:facet name="footer">
+						<p:commandButton value="#{msg['btn_delete']}"
+							action="#{doctorBacking.deleteScheduleAction}"
+							update="recordTableDetail" />
+					</f:facet>
+
+				</p:dataTable>
+
+			</p:dialog>
+
+		</h:form>
+
+	</ui:define>
+</ui:composition>
+</html>

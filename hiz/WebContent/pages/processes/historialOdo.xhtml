@@ -1,0 +1,659 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<p:tabView style="width:100%;height:100%" dynamic="true"
+	id="#{prefix}_tabview"
+	rendered="#{historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+
+	<p:tab id="tab1" title="#{msg['his_history']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable id="tblHistoryAppointment" var="rec"
+			value="#{historyOdontologyBacking.historyAppointmentModel}"
+			rowKey="#{rec.code}" style="width:100%" paginator="true" rows="10"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:column headerText="#{msg['app_date']}">
+				<h:outputLabel value="#{rec.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column headerText="#{msg['app_branch']}">
+				<h:outputLabel value="#{rec.branchName}" />
+			</p:column>
+
+			<p:column headerText="#{msg['app_doctor']}">
+				<h:outputLabel value="#{rec.doctorNames}" />
+			</p:column>
+
+			<p:column headerText="#{msg['app_procedure']}">
+				<h:outputLabel value="#{rec.prcDetName}" />
+			</p:column>
+
+			<p:column style="width:4%">
+				<p:commandButton icon="ui-icon-print" ajax="false"
+					title="#{msg['btn_print_medication']}"
+					action="#{historyOdontologyBacking.printFormulaHistorialAction}"
+					disabled="#{rec.state ne 4 or rec.closeAppointment eq 0}">
+					<f:setPropertyActionListener value="#{rec}"
+						target="#{historyOdontologyBacking.selectedAppointmentPrint}" />
+				</p:commandButton>
+			</p:column>
+
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab2" title="#{msg['his_history_history']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable id="tblHistory" var="rec"
+			value="#{historyOdontologyBacking.historyHistoryModel}"
+			rowKey="#{rec.code}" style="width:100%" paginator="true" rows="5"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:column headerText="#{msg['app_date']}">
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column headerText="#{msg['exp_doctor']}">
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_history_reason']}">
+				<h:outputLabel value="#{rec.reason}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_history_disease']}">
+				<h:outputLabel value="#{rec.disease}" />
+			</p:column>
+
+			<p:column style="width:4%" rendered="false">
+				<p:commandButton icon="ui-icon-search" title="#{msg['btn_view']}"
+					update=":form:dialogHistory" oncomplete="dlgHistory.show();">
+					<f:setPropertyActionListener value="#{rec}"
+						target="#{historyOdontologyBacking.selectedHistoryHistory}" />
+				</p:commandButton>
+			</p:column>
+
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab3" title="#{msg['his_history_record']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable id="tblRecord" var="rec"
+			value="#{historyOdontologyBacking.historyRecordModel}"
+			rowKey="#{rec.code}" style="width:100%" paginator="true" rows="5"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:column headerText="#{msg['app_date']}">
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column headerText="#{msg['exp_doctor']}">
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_rec_per_arthritis']}">
+				<h:outputLabel value="#{rec.arthritis?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_rec_per_cancer']}">
+				<h:outputLabel value="#{rec.cancer?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_rec_per_pulmonary']}">
+				<h:outputLabel value="#{rec.pulmonary?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_rec_per_diabetes']}">
+				<h:outputLabel value="#{rec.diabetes?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_rec_per_hypertension']}">
+				<h:outputLabel value="#{rec.hypertension?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_rec_per_hospitalizations']}">
+				<h:outputLabel value="#{rec.hospitalizations?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_rec_per_allergy']}">
+				<h:outputLabel value="#{rec.allergy?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_rec_per_infections']}">
+				<h:outputLabel value="#{rec.infections?'SI':'NO'}" />
+			</p:column>
+
+			<p:column style="width:4%" rendered="false">
+				<p:commandButton icon="ui-icon-search" title="#{msg['btn_view']}"
+					update=":form:dialogRecord" oncomplete="dlgRecord.show();">
+					<f:setPropertyActionListener value="#{rec}"
+						target="#{historyOdontologyBacking.selectedHistoryRecord}" />
+				</p:commandButton>
+			</p:column>
+
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab4" title="#{msg['his_general_findings']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'NURSE_AUX' or historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable id="tblPhysique" var="rec"
+			value="#{historyOdontologyBacking.historyPhysiqueModel}"
+			rowKey="#{rec.code}" style="width:100%" paginator="true" rows="5"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:column headerText="#{msg['app_date']}">
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column headerText="#{msg['exp_doctor']}">
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_physique_heart_rate']}">
+				<h:outputLabel value="#{rec.heartRate}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_physique_respiratory_rate']}">
+				<h:outputLabel value="#{rec.respiratoryRate}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_physique_blood_pressure']}">
+				<h:outputLabel value="#{rec.bloodPressure}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_physique_brush_frecuency']}">
+				<h:outputLabel value="#{rec.brushFrecuency}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_physique_floss']}">
+				<h:outputLabel value="#{rec.floss?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_physique_oral_hygiene_habit']}">
+				<h:outputLabel value="#{rec.oralHygieneHabit?'SI':'NO'}" />
+			</p:column>
+
+			<p:column style="width:4%" rendered="false">
+				<p:commandButton icon="ui-icon-search" title="#{msg['btn_view']}"
+					update=":form:dialogPhysique" oncomplete="dlgPhysique.show();">
+					<f:setPropertyActionListener value="#{rec}"
+						target="#{historyOdontologyBacking.selectedHistoryPhysique}" />
+				</p:commandButton>
+			</p:column>
+
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab5" title="#{msg['his_stomatolog']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'NURSE_AUX' or historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable id="tblStomatolog" var="rec"
+			value="#{historyOdontologyBacking.historyStomatologModel}"
+			rowKey="#{rec.code}" style="width:100%" paginator="true" rows="5"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:column headerText="#{msg['app_date']}">
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column headerText="#{msg['exp_doctor']}">
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column
+				headerText="#{msg['his_stomatolog_head']} #{msg['his_stomatolog_exostosis_head']}">
+				<h:outputLabel value="#{rec.exostosisHead eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column
+				headerText="#{msg['his_stomatolog_head']} #{msg['his_stomatolog_endostosis_head']}">
+				<h:outputLabel value="#{rec.endostosisHead eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column
+				headerText="#{msg['his_stomatolog_face']} #{msg['his_stomatolog_dolichocephalic_face']}">
+				<h:outputLabel value="#{rec.dolichocephalicFace eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column
+				headerText="#{msg['his_stomatolog_face']} #{msg['his_stomatolog_mesocephalic_face']}">
+				<h:outputLabel value="#{rec.mesocephalicFace eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column
+				headerText="#{msg['his_stomatolog_face']} #{msg['his_stomatolog_brachycephalic_face']}">
+				<h:outputLabel value="#{rec.brachycephalicFace eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column style="width:4%" rendered="false">
+				<p:commandButton icon="ui-icon-search" title="#{msg['btn_view']}"
+					update=":form:dialogPhysique" oncomplete="dlgPhysique.show();">
+					<f:setPropertyActionListener value="#{rec}"
+						target="#{historyOdontologyBacking.selectedHistoryPhysique}" />
+				</p:commandButton>
+			</p:column>
+
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab6" title="#{msg['his_temp_joint']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'NURSE_AUX' or historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable id="tblTempJoint" var="rec"
+			value="#{historyOdontologyBacking.historyTempJointModel}"
+			rowKey="#{rec.code}" style="width:100%" paginator="true" rows="5"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:columnGroup type="header">
+				<p:row>
+					<p:column rowspan="3" headerText="#{msg['app_date']}" />
+					<p:column rowspan="3" headerText="#{msg['exp_doctor']}" />
+				</p:row>
+
+				<p:row>
+					<p:column colspan="3" headerText="#{msg['his_temp_joint_noise']}" />
+					<p:column colspan="3"
+						headerText="#{msg['his_temp_joint_deviation']}" />
+					<p:column colspan="3" headerText="#{msg['his_temp_joint_pain']}" />
+					<p:column colspan="3"
+						headerText="#{msg['his_temp_joint_fatigue_muscle_pain']}" />
+				</p:row>
+
+				<p:row>
+					<p:column headerText="#{msg['his_temp_joint_opening']}" />
+					<p:column headerText="#{msg['his_temp_joint_closure']}" />
+					<p:column headerText="#{msg['his_temp_joint_laterality']}" />
+					<p:column headerText="#{msg['his_temp_joint_opening']}" />
+					<p:column headerText="#{msg['his_temp_joint_closure']}" />
+					<p:column headerText="#{msg['his_temp_joint_laterality']}" />
+					<p:column headerText="#{msg['his_temp_joint_opening']}" />
+					<p:column headerText="#{msg['his_temp_joint_closure']}" />
+					<p:column headerText="#{msg['his_temp_joint_laterality']}" />
+					<p:column headerText="#{msg['his_temp_joint_opening']}" />
+					<p:column headerText="#{msg['his_temp_joint_closure']}" />
+					<p:column headerText="#{msg['his_temp_joint_laterality']}" />
+				</p:row>
+			</p:columnGroup>
+
+			<p:column>
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.openingNoise eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.closureNoise eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.lateralityNoise eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.openingDeviaton eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.closureDeviaton eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.lateralityDeviaton eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.openingPain eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.closurePain eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.lateralityPain eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.openingFatigue eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.closureFatigue eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.lateralityFatigue eq 1?'SI':'NO'}" />
+			</p:column>
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab7" title="#{msg['his_soft_tissue']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'NURSE_AUX' or historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable id="tblSoftTissue" var="rec"
+			value="#{historyOdontologyBacking.historySoftTissueModel}"
+			rowKey="#{rec.code}" style="width:100%" paginator="true" rows="5"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:columnGroup type="header">
+				<p:row>
+					<p:column rowspan="3" headerText="#{msg['app_date']}" />
+					<p:column rowspan="3" headerText="#{msg['exp_doctor']}" />
+				</p:row>
+
+				<p:row>
+					<p:column colspan="2" headerText="#{msg['his_soft_tissue_gland']}" />
+					<p:column colspan="2" headerText="#{msg['his_soft_tissue_lymph']}" />
+					<p:column colspan="2"
+						headerText="#{msg['his_soft_tissue_oral_mucosa']}" />
+					<p:column colspan="2" headerText="#{msg['his_soft_tissue_braces']}" />
+					<p:column colspan="2" headerText="#{msg['his_soft_tissue_tongue']}" />
+					<p:column colspan="2" headerText="#{msg['his_soft_tissue_palate']}" />
+					<p:column colspan="2"
+						headerText="#{msg['his_soft_tissue_mounth_floor']}" />
+					<p:column colspan="2"
+						headerText="#{msg['his_soft_tissue_oropharynx']}" />
+				</p:row>
+
+				<p:row>
+					<p:column headerText="#{msg['his_soft_tissue_normal']}" />
+					<p:column headerText="#{msg['his_soft_tissue_altered']}" />
+					<p:column headerText="#{msg['his_soft_tissue_normal']}" />
+					<p:column headerText="#{msg['his_soft_tissue_altered']}" />
+					<p:column headerText="#{msg['his_soft_tissue_normal']}" />
+					<p:column headerText="#{msg['his_soft_tissue_altered']}" />
+					<p:column headerText="#{msg['his_soft_tissue_normal']}" />
+					<p:column headerText="#{msg['his_soft_tissue_altered']}" />
+					<p:column headerText="#{msg['his_soft_tissue_normal']}" />
+					<p:column headerText="#{msg['his_soft_tissue_altered']}" />
+					<p:column headerText="#{msg['his_soft_tissue_normal']}" />
+					<p:column headerText="#{msg['his_soft_tissue_altered']}" />
+					<p:column headerText="#{msg['his_soft_tissue_normal']}" />
+					<p:column headerText="#{msg['his_soft_tissue_altered']}" />
+					<p:column headerText="#{msg['his_soft_tissue_normal']}" />
+					<p:column headerText="#{msg['his_soft_tissue_altered']}" />
+				</p:row>
+			</p:columnGroup>
+
+			<p:column>
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.glandNormal eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.glandAltered eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.lymphNormal eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.lymphAltered eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.oralMucosaNormal eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.oralMucosaAltered eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.bracesNormal eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.bracesAltered eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.tongueNormal eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.tongueAltered eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.palateNormal eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.palateAltered eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.mounthFloorNormal eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.mounthFloorAltered eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.oropharynxNormal eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column>
+				<h:outputLabel value="#{rec.oropharynxAltered eq 1?'SI':'NO'}" />
+			</p:column>
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab8" title="#{msg['his_soft_periodontal']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'NURSE_AUX' or historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable id="tblPeriodontal" var="rec"
+			value="#{historyOdontologyBacking.historyPeriodontalModel}"
+			rowKey="#{rec.code}" style="width:100%" paginator="true" rows="5"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:column headerText="#{msg['app_date']}">
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column headerText="#{msg['exp_doctor']}">
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_soft_periodontal_gingivitis']}">
+				<h:outputLabel value="#{rec.gingivitis eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_soft_periodontal_periodontitis']}">
+				<h:outputLabel value="#{rec.periodontitis eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_soft_periodontal_mobility']}">
+				<h:outputLabel value="#{rec.mobility eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_soft_periodontal_bag_teeth']}">
+				<h:outputLabel value="#{rec.bagTeeth eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column
+				headerText="#{msg['his_soft_periodontal_gingival_recession']}">
+				<h:outputLabel value="#{rec.gingivalRecession eq 1?'SI':'NO'}" />
+			</p:column>
+
+			<p:column
+				headerText="#{msg['his_soft_periodontal_plaque_index']} (%)">
+				<h:outputLabel value="#{rec.gingivalRecession}" />
+			</p:column>
+
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab9" title="#{msg['his_supplementary_exams']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'NURSE_AUX' or historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable id="tblSupplementaryExams" var="rec"
+			value="#{historyOdontologyBacking.historySupplExamsModel}"
+			rowKey="#{rec.code}" style="width:100%" paginator="true" rows="5"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:column headerText="#{msg['app_date']}">
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column headerText="#{msg['exp_doctor']}">
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_history_obs']}">
+				<h:outputLabel value="#{rec.obs}" />
+			</p:column>
+
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab10" title="#{msg['his_evolution']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'NURSE_AUX' or historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable id="tblEvolution" var="rec"
+			value="#{historyOdontologyBacking.historyEvolutionModel}"
+			rowKey="#{rec.code}" style="width:100%" paginator="true" rows="5"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:column headerText="#{msg['app_date']}">
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column headerText="#{msg['exp_doctor']}">
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column headerText="#{msg['his_history_obs']}">
+				<h:outputLabel value="#{rec.obs}" />
+			</p:column>
+
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab11" title="#{msg['his_history_ip_odo']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable var="rec"
+			value="#{historyOdontologyBacking.listDiagnosisView}"
+			paginator="true" rows="15" style="width:100%"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:column headerText="#{msg['app_date']}">
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column headerText="#{msg['app_doctor']}">
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column headerText="#{msg['cie_desc']}">
+				<h:outputLabel value="#{rec.crmCie.description}" />
+			</p:column>
+
+		</p:dataTable>
+
+	</p:tab>
+
+	<p:tab id="tab12" title="#{msg['his_history_medicaction']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+		<p:dataTable var="rec"
+			value="#{historyOdontologyBacking.listMedicationView}"
+			paginator="true" rows="15" style="width:100%"
+			emptyMessage="#{msg['glb_no_records_found']}">
+
+			<p:column headerText="#{msg['app_date']}">
+				<h:outputLabel value="#{rec.crmAppointment.startAppointmentDate}">
+					<f:convertDateTime pattern="dd/MM/yyyy" />
+				</h:outputLabel>
+			</p:column>
+
+			<p:column headerText="#{msg['app_doctor']}">
+				<h:outputLabel value="#{rec.crmAppointment.crmDoctor.names}" />
+			</p:column>
+
+			<p:column headerText="#{msg['sal_material_descr']}">
+				<h:outputLabel value="#{rec.descMaterial}" />
+			</p:column>
+
+			<p:column headerText="#{msg['sal_material_amount']}"
+				style="width:100px">
+				<h:outputLabel value="#{rec.unit}" />
+			</p:column>
+
+			<p:column headerText="#{msg['cie_grp_diagnosis']}">
+				<h:outputLabel value="#{rec.crmCie.description}" />
+			</p:column>
+		</p:dataTable>
+	</p:tab>
+
+	<p:tab id="tab13" title="#{msg['his_history_consent']}"
+		rendered="#{historyOdontologyBacking.rolePrincipal eq 'NURSE' or historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}">
+
+		<h:panelGrid width="100%">
+			<p:commandButton value="#{msg['btn_add']}"
+				actionListener="#{historyOdontologyBacking.newConsentAction}"
+				oncomplete="dlgConsent.show()" update=":form:dialogConsent"
+				rendered="#{historyOdontologyBacking.rolePrincipal eq 'DOCTOR'}" />
+
+			<p:spacer />
+
+			<p:dataTable id="tblConsent" var="rec"
+				value="#{historyOdontologyBacking.listConsentView}" paginator="true"
+				rows="15" style="width:100%"
+				emptyMessage="#{msg['glb_no_records_found']}">
+
+				<p:column headerText="#{msg['con_date_informed']}" width="80%">
+					<h:outputLabel value="#{rec.dateInformed}">
+						<f:convertDateTime pattern="dd/MM/yyyy" />
+					</h:outputLabel>
+				</p:column>
+
+				<p:column headerText="#{msg['con_consent']}" width="20%">
+					<p:commandButton id="downloadLink" value="#{msg['btn_download']}"
+						ajax="false" icon="ui-icon-carat-1-s"
+						onclick="PrimeFaces.monitorDownload(start, stop)">
+						<p:fileDownload
+							value="#{historyOdontologyBacking.getFile(rec.consentFile)}" />
+					</p:commandButton>
+				</p:column>
+			</p:dataTable>
+		</h:panelGrid>
+	</p:tab>
+
+</p:tabView>
+
+</html>

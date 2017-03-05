@@ -1,0 +1,129 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:1150px;height:100%;"
+			header="#{msg['title_appointment_branch']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:growl id="growl" showDetail="true" />
+
+				<p:toolbar id="toolbar" style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton id="btnSearch" value="#{msg['btn_search']}"
+							icon="ui-icon-search" update="recordTable toolbar growl"
+							actionListener="#{appointmentBranchBacking.searchAction}" />
+						<p:commandButton id="btnExport" oncomplete="exportDlg.show();"
+							value="#{msg['btn_export']}" icon="ui-icon-disk"
+							disabled="#{empty appointmentBranchBacking.list}" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="5" />
+
+				<h:panelGrid id="pnlDetail" columns="2" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+
+					<h:outputLabel value="#{msg['usr_branch']}" style="width:40%" />
+					<p:selectCheckboxMenu
+						value="#{appointmentBranchBacking.listBranchSelected}"
+						label="#{msg['usr_branch']}" filter="true"
+						filterMatchMode="contains" panelStyle="width:350px"
+						style="width:350px;">
+						<f:selectItems
+							value="#{appointmentBranchBacking.listCrmBranchByUser}" />
+					</p:selectCheckboxMenu>
+
+					<h:outputLabel value="#{msg['src_star_date']}" style="width:40%" />
+					<p:calendar value="#{appointmentBranchBacking.startDate}"
+						required="true" label="#{msg['src_star_date']}"
+						readonlyInput="true" pattern="dd/MM/yyyy" showOn="button"
+						navigator="true" locale="es" />
+
+					<h:outputLabel value="#{msg['src_end_date']}" style="width:40%" />
+					<p:calendar value="#{appointmentBranchBacking.endDate}"
+						required="true" label="#{msg['src_end_date']}"
+						readonlyInput="true" pattern="dd/MM/yyyy" showOn="button"
+						navigator="true" locale="es" />
+				</h:panelGrid>
+
+				<p:spacer height="5" />
+
+				<p:dataTable id="recordTable" var="rec"
+					value="#{appointmentBranchBacking.list}" paginator="true" rows="20"
+					style="width:100%" emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column filterBy="branchName" filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['msr_branch']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.branchName}" />
+					</p:column>
+
+					<p:column filterBy="id.status" filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['glb_state']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.id.status}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['ind_num']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.count}" />
+					</p:column>
+
+
+
+				</p:dataTable>
+
+				<p:dialog id="exportDialog" widgetVar="exportDlg" modal="true"
+					closable="true" header="#{msg['btn_export']}">
+
+					<h:outputLabel value="#{msg['app_src_format']}"
+						style="font-size:medium;" />
+
+					<h:panelGrid width="100%" columns="3">
+
+						<h:commandLink>
+							<p:graphicImage id="imgExcel" value="../../images/excel.png"
+								alt="Excel" />
+							<p:dataExporter type="xls" target="recordTable" fileName="export" />
+							<p:tooltip for="imgExcel" value="#{msg['btn_export_excel']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+						<h:commandLink>
+							<p:graphicImage id="imgCSV" value="../../images/csv.png" />
+							<p:dataExporter type="csv" target="recordTable" fileName="export" />
+							<p:tooltip for="imgCSV" value="#{msg['btn_export_csv']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+						<h:commandLink>
+							<p:graphicImage id="imgXML" value="../../images/xml.png" />
+							<p:dataExporter type="xml" target="recordTable" fileName="export" />
+							<p:tooltip for="imgXML" value="#{msg['btn_export_xml']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+					</h:panelGrid>
+				</p:dialog>
+
+			</h:form>
+		</p:panel>
+
+	</ui:define>
+</ui:composition>
+</html>

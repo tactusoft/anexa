@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/spring_hibernate_libs"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.24-bin.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/affinityWebServices"/>
+	<classpathentry kind="lib" path="E:/libs/spring_hibernate/c3p0-0.9.5-pre9.jar"/>
+	<classpathentry kind="lib" path="E:/libs/spring_hibernate/mchange-commons-java-0.2.8.jar"/>
+	<classpathentry kind="lib" path="lib/postgresql-9.3-1103.jdbc4.jar"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/hiz-model"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/ws-commons-util-1.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/xmlrpc-client-3.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/xmlrpc-common-3.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/xmlrpc-server-3.1.3.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

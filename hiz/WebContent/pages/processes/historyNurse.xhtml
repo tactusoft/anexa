@@ -1,0 +1,422 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<h:form id="form" enctype="multipart/form-data">
+
+			<p:panel style="width:100%;height:100%;"
+				header="#{historyNurseBacking.title}">
+
+				<p:spacer height="5" />
+
+				<p:poll rendered="#{not historyNurseBacking.modeEdit}"
+					update="selectedTable" interval="60"
+					listener="#{historyNurseBacking.refreshAction}" />
+
+				<p:growl id="growl" showDetail="true" />
+
+				<p:toolbar id="toolBarPatient" style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_refresh']}"
+							icon="ui-icon-arrowrefresh-1-s" update="form"
+							action="#{historyNurseBacking.refreshAction}"
+							rendered="#{not historyNurseBacking.modeEdit and not historyNurseBacking.modeHistorial}" />
+						<p:commandButton id="btnSelectPatient"
+							value="#{msg['btn_add_patient']}" icon="ui-icon-circle-check"
+							oncomplete="dlgPatient.show()" update="dialogPatient"
+							rendered="#{not historyNurseBacking.modeEdit and not historyNurseBacking.modeHistorial}" />
+						<p:commandButton value="#{msg['btn_close_appointment']}"
+							icon="ui-icon-locked" process="@this, accordion"
+							rendered="#{historyNurseBacking.modeEdit}"
+							action="#{historyNurseBacking.closeAppointmentAction}"
+							update="form">
+							<p:confirm header="#{msg['app_title']}"
+								message="#{msg['glb_question']}" icon="ui-icon-alert" />
+						</p:commandButton>
+						<p:commandButton icon="ui-icon-arrowreturnthick-1-w"
+							value="#{msg['btn_return']}" update="form"
+							rendered="#{historyNurseBacking.modeEdit or historyNurseBacking.modeHistorial}"
+							immediate="true">
+							<f:setPropertyActionListener value="false"
+								target="#{historyNurseBacking.modeEdit}" />
+							<f:setPropertyActionListener value="false"
+								target="#{historyNurseBacking.modeHistorial}" />
+						</p:commandButton>
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer />
+
+				<!-- TACTU CITAS -->
+				<h:panelGrid id="tblAppointment" columns="1" width="100%">
+					<p:dataTable id="selectedTable" var="rec"
+						value="#{historyNurseBacking.appointmentModel}"
+						rowKey="#{rec.code}" style="width:100%" paginator="true" rows="10"
+						emptyMessage="#{msg['glb_no_records_found_check']}"
+						rendered="#{not historyNurseBacking.modeEdit and not historyNurseBacking.modeHistorial}">
+
+						<f:facet name="header">
+							#{msg['app_avalaible']}
+						</f:facet>
+
+						<p:column headerText="#{msg['app_date']}">
+							<h:outputLabel value="#{rec.startAppointmentDate}">
+								<f:convertDateTime pattern="dd/MM/yyyy HH:mm" />
+							</h:outputLabel>
+						</p:column>
+
+						<p:column headerText="#{msg['pat_surnames']}">
+							<h:outputLabel value="#{rec.patSurnames}" />
+						</p:column>
+
+						<p:column headerText="#{msg['pat_names']}">
+							<h:outputLabel value="#{rec.patFirstnames}" />
+						</p:column>
+
+						<p:column headerText="#{msg['app_branch']}">
+							<h:outputLabel value="#{rec.branchName}" />
+						</p:column>
+
+						<p:column headerText="#{msg['app_procedure']}">
+							<h:outputLabel value="#{rec.prcDetName}" />
+						</p:column>
+
+						<p:column headerText="#{msg['pat_type_obs']}" style="width:100px">
+							<h:inputTextarea rows="3" style="width:200px" value="#{rec.obs}"
+								readonly="true" />
+						</p:column>
+
+						<p:column style="width:4%">
+							<p:commandButton icon="ui-icon-check"
+								title="#{msg['btn_assisted_appointment']}" update=":form"
+								action="#{historyNurseBacking.editAppointmentAction}"
+								process="@this">
+								<f:setPropertyActionListener value="#{rec}"
+									target="#{historyNurseBacking.selectedAppointment}" />
+							</p:commandButton>
+						</p:column>
+
+					</p:dataTable>
+
+					<p:accordionPanel id="accordion" style="width:1100px;height:100%"
+						rendered="#{historyNurseBacking.modeEdit or historyNurseBacking.modeHistorial}">
+
+						<p:tab title="#{msg['his_history_note']}" id="NOTE">
+							<h:panelGrid id="pnlNote" columns="2" width="100%"
+								rendered="#{historyNurseBacking.modeEdit}">
+								<p:outputLabel value="#{msg['his_history_therapy']}"
+									for="selTherapy" />
+								<p:selectOneMenu id="selTherapy"
+									label="#{msg['his_history_therapy']}"
+									value="#{historyNurseBacking.idNoteTherapy}"
+									style="width:400px;">
+									<f:selectItems
+										value="#{historyNurseBacking.listNoteTherapyItem}" />
+									<p:ajax update="pnlNote" process="@this"
+										listener="#{historyNurseBacking.handleTherapyChange}" />
+								</p:selectOneMenu>
+
+								<p:spacer />
+								<p:spacer />
+
+								<h:outputLabel value="#{msg['his_history_note']}" />
+								<p:inputTextarea id="txtNote" rows="5" style="width:400px;"
+									value="#{historyNurseBacking.noteDoctor}" required="false"
+									label="#{msg['his_history_note']}"
+									rendered="#{not historyNurseBacking.autoNote}" />
+								<p:panelGrid id="pnlAutoNote"
+									binding="#{historyNurseBacking.containerComponent}"
+									rendered="#{historyNurseBacking.autoNote}"
+									style="width:400px;border-style: solid;border-width: 1px;" />
+
+								<p:commandButton value="#{msg['btn_add']}"
+									process="@this,pnlNote"
+									actionListener="#{historyNurseBacking.saveNoteAction}"
+									update=":form:growl pnlNote tblNotes">
+									<p:confirm header="#{msg['app_title']}"
+										message="#{msg['glb_question']}" icon="ui-icon-alert" />
+								</p:commandButton>
+							</h:panelGrid>
+
+							<p:spacer />
+
+							<p:dataTable id="tblNotes" var="rec"
+								value="#{historyNurseBacking.listNoteView}" paginator="true"
+								rows="15" style="width:100%"
+								emptyMessage="#{msg['glb_no_records_found']}">
+
+								<p:column headerText="#{msg['app_date']}"
+									rendered="#{historyNurseBacking.modeHistorial}">
+									<h:outputLabel value="#{rec.noteDate}">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputLabel>
+								</p:column>
+
+								<p:column rendered="#{historyNurseBacking.modeHistorial}"
+									headerText="#{msg['app_doctor']} / #{msg['prc_time_nurse']}">
+									<h:outputLabel
+										value="#{rec.crmDoctor ne null?rec.crmDoctor.names:rec.crmNurse.names}" />
+								</p:column>
+
+								<p:column headerText="#{msg['his_history_note_type']}">
+									<h:outputLabel value="#{rec.noteType}" />
+								</p:column>
+
+								<p:column headerText="#{msg['his_history_therapy']}">
+									<h:outputLabel value="#{rec.otherNoteType}" />
+								</p:column>
+
+								<p:column headerText="#{msg['his_history_note']}"
+									style="width:560px">
+									<h:outputLabel value="#{rec.note}" />
+								</p:column>
+							</p:dataTable>
+						</p:tab>
+
+						<p:tab title="#{msg['his_history_consent']}" id="CONSENT">
+
+							<p:fieldset legend="#{msg['con_type']}">
+								<h:panelGrid width="100%">
+									<p:selectOneRadio id="options" layout="pageDirection"
+										value="#{historyNurseBacking.consentType}">
+										<p:ajax update="pnlConsentType" />
+										<f:selectItem itemLabel="#{msg['con_type_m']}" itemValue="M" />
+										<f:selectItem itemLabel="#{msg['con_type_a']}" itemValue="A" />
+									</p:selectOneRadio>
+								</h:panelGrid>
+							</p:fieldset>
+
+							<p:spacer />
+
+							<h:panelGrid id="pnlConsentType" width="100%">
+								<p:fieldset legend="#{msg['con_type_m']}"
+									rendered="#{historyNurseBacking.consentType eq 'M'}">
+									<h:panelGrid id="pnlConsent" columns="2" width="100%"
+										rendered="#{historyNurseBacking.modeEdit}">
+										<h:outputLabel value="#{msg['con_consent']}" />
+										<p:fileUpload cancelLabel="#{msg['file_cancel']}"
+											invalidFileMessage="#{msg['file_invalid_size']}"
+											uploadLabel="#{msg['file_upload']}"
+											label="#{msg['file_choose']}"
+											fileUploadListener="#{uploadBacking.uploadFile}"
+											mode="advanced" sizeLimit="1258292" auto="true"
+											allowTypes="/(\.|\/)(jpe?g|png)$/" update="pnlPreview" />
+
+										<p:commandButton value="#{msg['btn_add']}"
+											process="@this,pnlConsent"
+											actionListener="#{historyNurseBacking.saveConsentAction}"
+											update=":form:growl tblConsent pnlPreview">
+											<p:confirm header="#{msg['app_title']}"
+												message="#{msg['glb_question']}" icon="ui-icon-alert" />
+										</p:commandButton>
+									</h:panelGrid>
+
+									<p:spacer />
+
+									<p:panel id="pnlPreview" header="#{msg['title_preview']}">
+										<p:graphicImage id="currentImage"
+											value="#{uploadBacking.uploadedFileAsStream}" width="100%"
+											height="200" cache="false" />
+									</p:panel>
+
+								</p:fieldset>
+
+								<p:fieldset legend="#{msg['con_type_a']}"
+									rendered="#{historyNurseBacking.consentType eq 'A'}">
+									<h:panelGrid width="100%">
+										<h:outputText value="#{historyNurseBacking.consentText}"
+											escape="false" />
+										<h:panelGrid columns="2">
+											<p:commandButton value="Firmar" oncomplete="onSign();"
+												process="@this" />
+											<p:commandButton value="#{msg['btn_add']}"
+												oncomplete="onDone();" process="@this" />
+										</h:panelGrid>
+									</h:panelGrid>
+								</p:fieldset>
+
+							</h:panelGrid>
+
+							<p:spacer />
+
+							<p:dataTable id="tblConsent" var="rec"
+								value="#{historyNurseBacking.listConsentView}" paginator="true"
+								rows="15" style="width:100%"
+								emptyMessage="#{msg['glb_no_records_found']}">
+
+								<p:column headerText="#{msg['con_date_informed']}"
+									rendered="#{historyNurseBacking.modeHistorial}">
+									<h:outputLabel value="#{rec.dateInformed}">
+										<f:convertDateTime pattern="dd/MM/yyyy" />
+									</h:outputLabel>
+								</p:column>
+
+								<p:column headerText="#{msg['con_consent']}" width="80%">
+									<p:graphicImage id="currentImage"
+										value="#{uploadBacking.bytesToStreamedContent}" width="100%"
+										height="100" cache="false"
+										rendered="#{rec.fileType ne 'AUTO'}">
+										<f:param name="CONSENT_ID" value="#{rec.id}" />
+									</p:graphicImage>
+									<p:commandLink value="#{msg['btn_view']}"
+										action="#{historyNurseBacking.viewConsent(rec.id)}"
+										update=":form:dlgConsent" rendered="#{rec.fileType eq 'AUTO'}"
+										oncomplete="dialogConsent.show();" />
+								</p:column>
+
+								<p:column>
+									<p:commandButton id="downloadLink"
+										value="#{msg['btn_download']}" ajax="false"
+										icon="ui-icon-carat-1-s"
+										onclick="PrimeFaces.monitorDownload(start, stop)"
+										rendered="#{rec.fileType ne 'AUTO'}">
+										<p:fileDownload value="#{historyNurseBacking.getFile(rec)}" />
+									</p:commandButton>
+									<p:commandButton id="dropLink" value="#{msg['btn_delete']}"
+										icon="ui-icon-trash"
+										action="#{historyNurseBacking.dropFile(rec)}"
+										update="tblConsent" rendered="false">
+										<p:confirm header="#{msg['app_title']}"
+											message="#{msg['glb_question']}" icon="ui-icon-alert" />
+									</p:commandButton>
+								</p:column>
+							</p:dataTable>
+						</p:tab>
+
+						<p:tab title="#{msg['his_history_custody']}" id="CUSTODY">
+							<h:panelGrid id="pnlCustodyParameter" columns="2" width="100%">
+								<h:outputLabel value="#{msg['cus_belongings']}" />
+								<p:inputText value="#{historyNurseBacking.belongings}"
+									style="width:250px;" label="#{msg['cus_belongings']}" />
+							</h:panelGrid>
+							<h:panelGrid columns="2">
+								<p:commandButton value="#{msg['btn_add']}"
+									actionListener="#{historyNurseBacking.addBelongings}"
+									process="@this,CUSTODY"
+									update="pnlCustodyParameter tblBelongings :form:growl" />
+								<p:commandButton value="#{msg['btn_save']}"
+									actionListener="#{historyNurseBacking.saveBelongings}"
+									process="@this,tblBelongings" update="CUSTODY :form:growl" />
+							</h:panelGrid>
+
+							<p:spacer />
+
+							<p:dataTable id="tblBelongings" var="rec"
+								value="#{historyNurseBacking.listBelongings}" paginator="true"
+								rows="15" style="width:100%"
+								emptyMessage="#{msg['glb_no_records_found']}">
+
+								<p:column headerText="#{msg['cus_belongings']}">
+									<h:outputLabel value="#{rec.belongings}" />
+								</p:column>
+
+								<p:column width="100">
+									<p:commandButton value="#{msg['btn_delete']}"
+										icon="ui-icon-trash"
+										action="#{historyNurseBacking.removeBelongings(rec)}"
+										update="tblBelongings"
+										rendered="#{historyNurseBacking.modeEdit}"
+										process="@this,tblBelongings">
+										<p:confirm header="#{msg['app_title']}"
+											message="#{msg['glb_question']}" icon="ui-icon-alert" />
+									</p:commandButton>
+								</p:column>
+							</p:dataTable>
+						</p:tab>
+
+					</p:accordionPanel>
+
+				</h:panelGrid>
+
+				<p:dialog header="#{msg['sal_patient']}" widgetVar="dlgPatient"
+					resizable="false" id="dialogPatient" showEffect="fade"
+					hideEffect="explode" modal="true" width="600">
+
+					<p:defaultCommand target="btnSearcPatient" />
+
+					<h:panelGrid columns="1" width="100%">
+						<h:outputLabel
+							value="Digite #{msg['sal_key_press_doc']} ó #{msg['sal_key_press_nom']}" />
+						<p:inputText value="#{historyNurseBacking.docPatient}"
+							style="width:100%" />
+					</h:panelGrid>
+
+					<p:spacer height="10" />
+
+					<h:panelGrid columns="2">
+						<p:commandButton id="btnSearcPatient" value="#{msg['btn_search']}"
+							icon="ui-icon-search" process="dialogPatient"
+							update="pnlTable2 recordTable2 btnAddPatient"
+							action="#{historyNurseBacking.searchPatientNewAction}" />
+						<p:commandButton id="btnAddPatient" value="#{msg['btn_add']}"
+							icon="ui-icon-plusthick" update=":form" process="dialogPatient"
+							actionListener="#{historyNurseBacking.showHistorialAction}"
+							disabled="#{historyNurseBacking.disabledAddPatient}"
+							oncomplete="dlgPatient.hide()" />
+					</h:panelGrid>
+
+					<p:spacer height="10" />
+
+					<p:scrollPanel id="pnlTable2" style="width:580px;height:300px">
+						<p:dataTable id="recordTable2" var="rec"
+							value="#{historyNurseBacking.patientModel}" rowKey="#{rec.id}"
+							selection="#{historyNurseBacking.selectedPatientTemp}"
+							paginator="true" rows="15" style="width:570px"
+							emptyMessage="#{msg['glb_no_records_found']}">
+
+							<p:column selectionMode="single" style="width:18px" />
+
+							<p:column headerText="#{msg['pat_sap_code']}">
+								<h:outputLabel value="#{rec.codeSap}" />
+							</p:column>
+
+							<p:column headerText="#{msg['pat_names']}">
+								<h:outputLabel value="#{rec.names}" />
+							</p:column>
+
+						</p:dataTable>
+					</p:scrollPanel>
+
+				</p:dialog>
+			</p:panel>
+
+			<h:inputHidden id="txtSign"
+				value="#{historyNurseBacking.consentSign}" />
+
+			<p:confirmDialog global="true" showEffect="fade" hideEffect="explode">
+				<p:commandButton value="#{msg['btn_ok']}" type="button"
+					styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+				<p:commandButton value="#{msg['btn_cancel']}" type="button"
+					styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+			</p:confirmDialog>
+
+			<p:dialog id="dlgConsent" widgetVar="dialogConsent" width="600"
+				height="200" header="#{msg['his_history_consent']}">
+				<h:outputText value="#{historyNurseBacking.consentHTML}"
+					escape="false" />
+			</p:dialog>
+
+			<p:remoteCommand name="showSignEmpty"
+				action="#{historyNurseBacking.showSignEmpty}" update="growl" />
+
+			<p:remoteCommand name="saveConsentTextAction"
+				action="#{historyNurseBacking.saveConsentTextAction}"
+				update="growl :form:accordion:tblConsent" />
+		</h:form>
+
+		<script type="text/javascript">
+			window.onunload = window.onbeforeunload = (function(){
+				closingSigWeb();
+			});
+		</script>
+
+	</ui:define>
+</ui:composition>
+</html>

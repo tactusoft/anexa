@@ -1,0 +1,103 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:100%;"
+			header="#{msg['title_view_doctor']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_search']}"
+							action="#{doctorAppointmentBacking.searchAction}"
+							update="schCalendar" icon="ui-icon-search" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="5" />
+
+				<h:panelGrid columns="4" width="100%">
+					<h:outputLabel value="#{msg['app_branch']}" />
+					<p:selectOneMenu style="width:400px" filter="true"
+						filterMatchMode="contains"
+						value="#{doctorAppointmentBacking.idBranch}">
+						<f:selectItems value="#{doctorAppointmentBacking.listBranch}" />
+						<p:ajax update="selDoctor"
+							listener="#{doctorAppointmentBacking.handleBranchChange}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['app_doctor']}" />
+					<p:selectOneMenu id="selDoctor" style="width:400px" filter="true"
+						filterMatchMode="contains"
+						value="#{doctorAppointmentBacking.doctor.id}">
+						<f:selectItems value="#{doctorAppointmentBacking.listDoctor}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['src_star_date']}" style="width:40%" />
+					<p:calendar value="#{doctorAppointmentBacking.startDate}"
+						label="#{msg['src_star_date']}" readonlyInput="true"
+						pattern="dd/MM/yyyy" showOn="button" navigator="true" locale="es" />
+
+					<h:outputLabel value="#{msg['src_end_date']}" style="width:40%" />
+					<p:calendar value="#{doctorAppointmentBacking.endDate}"
+						label="#{msg['src_end_date']}" readonlyInput="true"
+						pattern="dd/MM/yyyy" showOn="button" navigator="true" locale="es" />
+				</h:panelGrid>
+
+				<p:spacer height="5" />
+
+				<p:schedule id="schCalendar"
+					value="#{doctorAppointmentBacking.branchEventModel}"
+					widgetVar="myschedule" view="agendaWeek"
+					minTime="#{doctorAppointmentBacking.minHour}"
+					maxTime="#{doctorAppointmentBacking.maxHour}" slotMinutes="15"
+					showHeader="true">
+
+					<p:ajax event="eventSelect"
+						listener="#{doctorAppointmentBacking.onEventSelect}"
+						update="eventDetails" oncomplete="eventDialog.show()" />
+
+				</p:schedule>
+
+				<p:dialog widgetVar="eventDialog" header="#{msg['msg_detail']}"
+					showEffect="clip" hideEffect="clip" resizable="false">
+					<h:panelGrid id="eventDetails" columns="2">
+						<h:outputLabel for="title" value="#{msg['app_title']}" />
+						<p:inputTextarea id="title" style="width:100%"
+							value="#{doctorAppointmentBacking.event.title}" readonly="true" />
+
+						<h:outputLabel for="from" value="#{msg['app_start_hour']}" />
+						<p:inputText id="from" style="width:100%"
+							value="#{doctorAppointmentBacking.event.startDate}"
+							readonly="true">
+							<f:convertDateTime pattern="dd/MM/yyyy hh:mm a" />
+						</p:inputText>
+
+						<h:outputLabel for="to" value="#{msg['app_end_hour']}" />
+						<p:inputText id="to" style="width:100%"
+							value="#{doctorAppointmentBacking.event.endDate}" readonly="true">
+							<f:convertDateTime pattern="dd/MM/yyyy hh:mm a" />
+						</p:inputText>
+
+						<p:commandButton value="#{msg['btn_close']}"
+							oncomplete="eventDialog.hide();" />
+					</h:panelGrid>
+				</p:dialog>
+
+			</h:form>
+
+		</p:panel>
+
+	</ui:define>
+</ui:composition>
+</html>

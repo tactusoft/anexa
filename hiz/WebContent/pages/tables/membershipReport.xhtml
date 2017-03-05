@@ -1,0 +1,158 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:100%;height:600px;"
+			header="#{msg['title_membership_report']}">
+
+			<p:spacer height="10" />
+
+			<h:form id="form">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_new']}" icon="ui-icon-document"
+							action="#{membershipReportBacking.newAction}"
+							oncomplete="dlg.show()" update=":editForm:pnlDetail" />
+						<p:commandButton value="#{msg['btn_edit']}" icon="ui-icon-pencil"
+							oncomplete="dlg.show()" update=":editForm:pnlDetail"
+							action="#{membershipReportBacking.editAction}" rendered="false" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<p:dataTable id="recordTable" var="rec"
+					value="#{membershipReportBacking.model}" rowKey="#{rec.id}"
+					selection="#{membershipReportBacking.selected}" paginator="true"
+					rows="10" style="width:100%"
+					emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column selectionMode="single" style="width:18px" />
+
+					<p:column headerText="#{msg['msr_branch']}">
+						<h:outputLabel value="#{rec.crmBranch.name}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['msr_promoter']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.promoter}" />
+					</p:column>
+
+					<p:column headerText="#{msg['msr_date']}">
+						<h:outputLabel value="#{rec.reportDate}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column headerText="#{msg['msr_respondents']}">
+						<h:outputLabel value="#{rec.respondents}" />
+					</p:column>
+
+					<p:column headerText="#{msg['msr_memberships']}">
+						<h:outputLabel value="#{rec.memberships}" />
+					</p:column>
+					
+					<p:column headerText="#{msg['pat_type_obs']}">
+						<h:outputLabel value="#{rec.obs}" />
+					</p:column>
+
+				</p:dataTable>
+
+			</h:form>
+
+		</p:panel>
+
+		<h:form id="editForm">
+
+			<p:growl id="growl" showDetail="true" />
+
+			<p:dialog header="#{msg['msg_detail']}" widgetVar="dlg"
+				resizable="false" id="dialog" showEffect="fade" hideEffect="explode"
+				modal="true" width="500">
+
+				<p:toolbar style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton value="#{msg['btn_save']}" icon="ui-icon-disk"
+							action="#{membershipReportBacking.saveAction}"
+							update="growl :form:recordTable"
+							oncomplete="handleLoginRequest(xhr, status, args);" />
+						<p:commandButton value="#{msg['btn_close']}"
+							icon="ui-icon-closethick" update="growl :form:recordTable"
+							process="@none" oncomplete="dlg.hide()" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="10" />
+
+				<h:panelGrid id="pnlDetail" columns="2" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+
+					<h:outputLabel value="#{msg['msr_branch']}" />
+					<p:selectOneMenu style="width:350px"
+						value="#{membershipReportBacking.idBranch}"
+						filterMatchMode="contains" filter="true">
+						<f:selectItems
+							value="#{membershipReportBacking.listCrmBranchByUser}" />
+					</p:selectOneMenu>
+
+					<h:outputLabel value="#{msg['msr_promoter']}" />
+					<p:inputText value="#{membershipReportBacking.selected.promoter}"
+						label="#{msg['msr_promoter']}" required="true" maxlength="255"
+						style="width:350px" />
+
+					<h:outputLabel value="#{msg['msr_date']}" />
+					<p:calendar value="#{membershipReportBacking.selected.reportDate}"
+						required="true" label="#{msg['msr_date']}" readonlyInput="true"
+						pattern="dd/MM/yyyy" showOn="button" navigator="true" locale="es"
+						maxdate="#{membershipReportBacking.today}" />
+
+					<h:outputLabel value="#{msg['msr_respondents']}" />
+					<p:inputText
+						value="#{membershipReportBacking.selected.respondents}"
+						label="#{msg['msr_respondents']}" required="true">
+						<f:convertNumber minFractionDigits="0" maxFractionDigits="0" />
+						<f:validateLongRange minimum="1" />
+					</p:inputText>
+
+					<h:outputLabel value="#{msg['msr_memberships']}" />
+					<p:inputText
+						value="#{membershipReportBacking.selected.memberships}"
+						label="#{msg['msr_memberships']}" required="true">
+						<f:convertNumber minFractionDigits="0" maxFractionDigits="0" />
+						<f:validateLongRange minimum="1" />
+					</p:inputText>
+
+					<h:outputLabel value="#{msg['pat_type_obs']}" />
+					<p:inputTextarea label="#{msg['pat_type_obs']}"
+						value="#{membershipReportBacking.selected.obs}"
+						style="width:350px" rows="3" />
+
+				</h:panelGrid>
+
+			</p:dialog>
+		</h:form>
+
+		<script type="text/javascript">
+			function handleLoginRequest(xhr, status, args) {
+				if (args.validationFailed || !args.saved) {
+					/*jQuery('#:editForm:dialogDetail').effect("shake", {
+						times : 3
+					}, 100);*/
+				} else {
+					dlg.hide();
+				}
+			}
+		</script>
+	</ui:define>
+</ui:composition>
+</html>

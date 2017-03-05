@@ -1,0 +1,128 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+<ui:composition template="../templates/common.xhtml">
+
+	<ui:define name="body">
+
+		<p:panel style="width:1150px;height:100%;"
+			header="#{msg['title_infunsion_3']}">
+
+			<p:spacer height="5" />
+
+			<h:form id="form">
+
+				<p:growl id="growl" showDetail="true" />
+
+				<p:toolbar id="toolbar" style="width:100%">
+					<p:toolbarGroup align="left">
+						<p:commandButton id="btnSearch" value="#{msg['btn_search']}"
+							icon="ui-icon-search" update="recordTable toolbar growl"
+							actionListener="#{reportInfusion3Backing.searchAction}" />
+						<p:commandButton id="btnExport" oncomplete="exportDlg.show();"
+							value="#{msg['btn_export']}" icon="ui-icon-disk"
+							disabled="#{empty reportInfusion3Backing.list}" />
+					</p:toolbarGroup>
+				</p:toolbar>
+
+				<p:spacer height="5" />
+
+				<h:panelGrid id="pnlDetail" columns="2" cellpadding="4"
+					style="margin:0 auto;" width="100%">
+
+					<h:outputLabel value="#{msg['src_star_date']}" style="width:40%" />
+					<p:calendar value="#{reportInfusion3Backing.startDate}"
+						required="true" label="#{msg['src_star_date']}"
+						readonlyInput="true" pattern="dd/MM/yyyy" showOn="button"
+						navigator="true" locale="es" />
+
+					<h:outputLabel value="#{msg['src_end_date']}" style="width:40%" />
+					<p:calendar value="#{reportInfusion3Backing.endDate}"
+						required="true" label="#{msg['src_end_date']}"
+						readonlyInput="true" pattern="dd/MM/yyyy" showOn="button"
+						navigator="true" locale="es" />
+				</h:panelGrid>
+
+				<p:spacer height="5" />
+
+				<p:dataTable id="recordTable" var="rec"
+					value="#{reportInfusion3Backing.list}" paginator="true" rows="20"
+					style="width:100%" emptyMessage="#{msg['glb_no_records_found']}">
+
+					<p:column filterBy="#{rec.crmInfusionTag.id}"
+						filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="Id #{msg['gui_guideline']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.crmInfusionTag.id}" />
+					</p:column>
+
+					<p:column filterBy="#{rec.crmInfusionTag.description}"
+						filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['gui_guideline']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.crmInfusionTag.description}" />
+					</p:column>
+
+					<p:column filterBy="eventDate" filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['cam_date']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.eventDate}">
+							<f:convertDateTime pattern="dd/MM/yyyy" />
+						</h:outputLabel>
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputLabel value="#{msg['fsd_count']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.countForms}" />
+					</p:column>
+
+				</p:dataTable>
+
+				<p:dialog id="exportDialog" widgetVar="exportDlg" modal="true"
+					closable="true" header="#{msg['btn_export']}">
+
+					<h:outputLabel value="#{msg['app_src_format']}"
+						style="font-size:medium;" />
+
+					<h:panelGrid width="100%" columns="4">
+
+						<h:commandLink>
+							<p:graphicImage id="imgExcel" value="../../images/excel.png"
+								alt="Excel" />
+							<p:dataExporter type="xls" target="recordTable" fileName="export" />
+							<p:tooltip for="imgExcel" value="#{msg['btn_export_excel']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+						<h:commandLink>
+							<p:graphicImage id="imgCSV" value="../../images/csv.png" />
+							<p:dataExporter type="csv" target="recordTable" fileName="export" />
+							<p:tooltip for="imgCSV" value="#{msg['btn_export_csv']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+						<h:commandLink>
+							<p:graphicImage id="imgXML" value="../../images/xml.png" />
+							<p:dataExporter type="xml" target="recordTable" fileName="export" />
+							<p:tooltip for="imgXML" value="#{msg['btn_export_xml']}"
+								showEffect="fade" hideEffect="fade" />
+						</h:commandLink>
+
+					</h:panelGrid>
+				</p:dialog>
+
+			</h:form>
+		</p:panel>
+
+	</ui:define>
+</ui:composition>
+</html>
