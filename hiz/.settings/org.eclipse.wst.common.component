@@ -5,6 +5,9 @@
         <dependent-module deploy-path="/WEB-INF/lib" handle="module:/resource/hiz-model/hiz-model">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="hiz-web-services.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hiz-web-services/hiz-web-services">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="java-output-path" value="/hiz/WebContent/WEB-INF/classes"/>
         <property name="context-root" value="hiz"/>
     </wb-module>

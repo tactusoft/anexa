@@ -28,7 +28,7 @@ import co.com.tactusoft.crm.model.entities.CrmSapMedicationDistinct;
 import co.com.tactusoft.crm.model.entities.CrmSapMedicationId;
 import co.com.tactusoft.crm.model.entities.VwMedication;
 import co.com.tactusoft.crm.model.entities.sap.SapMedication;
-import co.com.tactusoft.crm.postsale.bo.ProcessBO;
+import co.com.tactusoft.crm.postsale.bo.PostsaleBO;
 import co.com.tactusoft.crm.postsale.bo.SapBO;
 import co.com.tactusoft.crm.postsale.util.InfunsionSoft;
 import co.com.tactusoft.crm.postsale.util.InfusionEntity;
@@ -42,7 +42,7 @@ public class PrincipalLite {
 	private static int MEDICATION = 4;
 
 	private BeanFactory beanFactory;
-	private ProcessBO processBO;
+	private PostsaleBO processBO;
 	private SapBO sapBO;
 
 	private Map<BigDecimal, CrmCampaign> mapCampaign;
@@ -60,7 +60,7 @@ public class PrincipalLite {
 			System.out.println("CARGANDO BASE DE DATOS...");
 			beanFactory = new ClassPathXmlApplicationContext(
 					"spring-config.xml");
-			processBO = beanFactory.getBean(ProcessBO.class);
+			processBO = beanFactory.getBean(PostsaleBO.class);
 			sapBO = beanFactory.getBean(SapBO.class);
 
 			/*

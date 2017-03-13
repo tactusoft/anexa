@@ -865,5 +865,31 @@ public class FacesUtil {
 			e.printStackTrace();
 		}
 	}
+	
+	public static int getCurrentDay(Date currentDate) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(currentDate);
+		int currentDay = calendar.get(Calendar.DAY_OF_WEEK);
+		return currentDay;
+	}
+
+	public static int getCurrentHour(Date currentDate) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(currentDate);
+		int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
+		return currentHour;
+	}
+	
+	public static Date stringTOSDateEN(String strDate, String format) {
+		SimpleDateFormat formatoDelTexto = new SimpleDateFormat(format,
+				Locale.ENGLISH);
+		Date date = null;
+		try {
+			date = formatoDelTexto.parse(strDate);
+		} catch (ParseException ex) {
+			date = null;
+		}
+		return date;
+	}
 
 }

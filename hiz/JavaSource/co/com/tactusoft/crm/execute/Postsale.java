@@ -1,4 +1,4 @@
-package co.com.tactusoft.crm.postsale.main;
+package co.com.tactusoft.crm.execute;
 
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
@@ -11,10 +11,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.xmlrpc.XmlRpcException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import javax.inject.Inject;
 
+import org.apache.xmlrpc.XmlRpcException;
+import org.springframework.stereotype.Service;
+
+import co.com.tactusoft.crm.controller.bo.PostsaleBO;
+import co.com.tactusoft.crm.controller.bo.SapBO;
 import co.com.tactusoft.crm.model.entities.CrmAppointment;
 import co.com.tactusoft.crm.model.entities.CrmBlockHistoryDetail;
 import co.com.tactusoft.crm.model.entities.CrmBranch;
@@ -35,21 +38,22 @@ import co.com.tactusoft.crm.model.entities.VwAppointmentMedication;
 import co.com.tactusoft.crm.model.entities.VwMedication;
 import co.com.tactusoft.crm.model.entities.sap.SapMedication;
 import co.com.tactusoft.crm.model.util.FacesUtilModel;
-import co.com.tactusoft.crm.postsale.bo.PostsaleBO;
-import co.com.tactusoft.crm.postsale.bo.SapBO;
-import co.com.tactusoft.crm.postsale.util.InfunsionSoft;
-import co.com.tactusoft.crm.postsale.util.InfusionEntity;
-import co.com.tactusoft.crm.postsale.util.Utils;
+import co.com.tactusoft.crm.util.FacesUtil;
+import co.com.tactusoft.crm.util.InfunsionSoft;
+import co.com.tactusoft.crm.view.beans.InfusionEntity;
 
-public class Principal {
+@Service
+public class Postsale {
 
 	private static int NO_ATTENDET = 1;
 	private static int CONFIRMED = 2;
 	private static int CONTROL = 3;
 	private static int MEDICATION = 4;
-
-	private BeanFactory beanFactory;
-	private PostsaleBO processBO;
+	
+	@Inject
+	private PostsaleBO postsaleBO;
+	
+	@Inject
 	private SapBO sapBO;
 
 	private Map<BigDecimal, CrmCampaign> mapCampaign;
@@ -70,7 +74,7 @@ public class Principal {
 		if (crmCampaign == null) {
 			crmCampaign = new CrmCampaign();
 
-			CrmUser crmUser = processBO
+			CrmUser crmUser = postsaleBO
 					.getUser(crmBranch, callDateString, type);
 			if (crmUser == null) {
 				crmUser = new CrmUser();
@@ -85,7 +89,7 @@ public class Principal {
 			crmCampaign.setState(1);
 			crmCampaign.setCrmUserByIdUserCreate(crmUserCreated);
 			crmCampaign.setDateCreated(new Date());
-			processBO.save(crmCampaign);
+			postsaleBO.save(crmCampaign);
 
 			mapCampaign
 					.put(crmAppointment.getCrmPatient().getId(), crmCampaign);
@@ -99,32 +103,28 @@ public class Principal {
 		crmCampaignDetail.setCallDate(callDate);
 		crmCampaignDetail.setCrmUserByIdUserCreate(crmUserCreated);
 		crmCampaignDetail.setDateCreated(new Date());
-		processBO.save(crmCampaignDetail);
+		postsaleBO.save(crmCampaignDetail);
 	}
 
 	public void execute() {
 		System.out.println("INCIANDO PROCESO...");
 		Date currentDate = new Date();
-		currentDate = Utils.stringTOSDate("10/03/2017 21", "dd/MM/yyyy HH");
+		//currentDate = FacesUtil.stringTOSDate("11/03/2017 21", "dd/MM/yyyy HH");
 
-		String currentDateString = Utils.formatDate(currentDate, "yyyy-MM-dd");
+		String currentDateString = FacesUtil.formatDate(currentDate, "yyyy-MM-dd");
 		CrmLogDetail crmLogDetail = new CrmLogDetail();
 
 		try {
 			System.out.println("CARGANDO BASE DE DATOS...");
-			beanFactory = new ClassPathXmlApplicationContext(
-					"spring-config.xml");
-			processBO = beanFactory.getBean(PostsaleBO.class);
-			sapBO = beanFactory.getBean(SapBO.class);
 			int count = 0;
 
-			int numDays = processBO.getLogLastDay(currentDate);
+			int numDays = postsaleBO.getLogLastDay(currentDate);
 
 			if (numDays > 0) {
 				numDays--;
-				Date processDate = Utils.addDaysToDate(currentDate, numDays
+				Date processDate = FacesUtil.addDaysToDate(currentDate, numDays
 						* -1);
-				String processDateString = Utils.formatDate(processDate,
+				String processDateString = FacesUtil.formatDate(processDate,
 						"yyyy-MM-dd");
 
 				mapCampaign = new HashMap<BigDecimal, CrmCampaign>();
@@ -134,17 +134,17 @@ public class Principal {
 				crmLog = new CrmLog();
 				crmLog.setLogDate(currentDate);
 				crmLog.setLogType("POSTVENTA");
-				processBO.save(crmLog);
+				postsaleBO.save(crmLog);
 
 				System.out.println("COMPROBANDO InfunsionSoft...");
 				crmLogDetail = new CrmLogDetail();
 				crmLogDetail.setCrmLog(crmLog);
 				crmLogDetail.setLogDate(currentDate);
 				crmLogDetail.setMessage("COMPROBANDO InfunsionSoft...");
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 				InfunsionSoft.getContactId("tactusoft@hotmail.com");
 
-				System.out.println("EXTRACCIÓN DE POS...");
+				System.out.println("EXTRACCIï¿½N DE POS...");
 
 				List<CrmSapMedication> listAddMedication = new LinkedList<CrmSapMedication>();
 				List<SapMedication> listMedication = sapBO
@@ -164,23 +164,23 @@ public class Principal {
 				}
 
 				for (CrmSapMedication row : listAddMedication) {
-					processBO.save(row);
+					postsaleBO.save(row);
 					count++;
 				}
 
 				crmLogDetail = new CrmLogDetail();
 				crmLogDetail.setCrmLog(crmLog);
 				crmLogDetail.setLogDate(currentDate);
-				crmLogDetail.setMessage("EXTRACCIÓN DE POS: " + count);
-				processBO.save(crmLogDetail);
+				crmLogDetail.setMessage("EXTRACCIï¿½N DE POS: " + count);
+				postsaleBO.save(crmLogDetail);
 
 				System.out.println("Buscar pacientes bloqueados...");
 
-				List<CrmPatient> listBlockPatient = processBO
+				List<CrmPatient> listBlockPatient = postsaleBO
 						.getListPatientBlock();
 				Map<String, Boolean> mapBlock = new HashMap<String, Boolean>();
 				for (CrmPatient row : listBlockPatient) {
-					List<CrmBlockHistoryDetail> listBlockHistoryDetail = processBO
+					List<CrmBlockHistoryDetail> listBlockHistoryDetail = postsaleBO
 							.getListBlockHistoryDetailLast(row.getId());
 					for (CrmBlockHistoryDetail row2 : listBlockHistoryDetail) {
 						mapBlock.put(row.getId() + "-"
@@ -194,52 +194,52 @@ public class Principal {
 				crmLogDetail.setMessage("PACIENTES BLOQUEADOS: "
 						+ (listBlockPatient == null ? "0" : String
 								.valueOf(listBlockPatient.size())));
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 
-				System.out.println("ACTUALIZACIÓN DE CAMPAÑAS NO ATENDIDAS...");
+				System.out.println("ACTUALIZACIï¿½N DE CAMPAï¿½AS NO ATENDIDAS...");
 				crmLogDetail = new CrmLogDetail();
 				crmLogDetail.setCrmLog(crmLog);
 				crmLogDetail.setLogDate(currentDate);
 				crmLogDetail
-						.setMessage("ACTUALIZACIÓN DE CAMAPAÑAS NO ATENDIDAS");
-				processBO.save(crmLogDetail);
-				processBO.updateCampaign(currentDateString);
+						.setMessage("ACTUALIZACIï¿½N DE CAMAPAï¿½AS NO ATENDIDAS");
+				postsaleBO.save(crmLogDetail);
+				postsaleBO.updateCampaign(currentDateString);
 
-				int currentDay = Utils.getCurrentDay(currentDate);
+				int currentDay = FacesUtil.getCurrentDay(currentDate);
 
 				Date yesterdayDate = null;
 				int yesterday = currentDay - 1;
 				if (yesterday != 1) {
-					yesterdayDate = Utils.addDaysToDate(currentDate, -1);
+					yesterdayDate = FacesUtil.addDaysToDate(currentDate, -1);
 				} else {
-					yesterdayDate = Utils.addDaysToDate(currentDate, -2);
+					yesterdayDate = FacesUtil.addDaysToDate(currentDate, -2);
 				}
-				String yesterdayString = Utils.formatDate(yesterdayDate,
+				String yesterdayString = FacesUtil.formatDate(yesterdayDate,
 						"yyyy-MM-dd");
 
 				Date tomorrowDate = null;
 				int tomorrow = currentDay + 2;
 				if (tomorrow != 1) {
-					tomorrowDate = Utils.addDaysToDate(currentDate, 2);
+					tomorrowDate = FacesUtil.addDaysToDate(currentDate, 2);
 				} else {
-					tomorrowDate = Utils.addDaysToDate(currentDate, 3);
+					tomorrowDate = FacesUtil.addDaysToDate(currentDate, 3);
 				}
-				String tomorrowString = Utils.formatDate(tomorrowDate,
+				String tomorrowString = FacesUtil.formatDate(tomorrowDate,
 						"yyyy-MM-dd");
 
 				// Buscando fecha llamada x sucursal
-				List<CrmBranch> listCrmBranch = processBO.getListBranchActive();
+				List<CrmBranch> listCrmBranch = postsaleBO.getListBranchActive();
 				for (CrmBranch branch : listCrmBranch) {
 					Date callDate = currentDate;
 					boolean validate = true;
 					do {
-						callDate = Utils.addDaysToDate(callDate, 1);
-						int day = Utils.getCurrentDay(callDate);
+						callDate = FacesUtil.addDaysToDate(callDate, 1);
+						int day = FacesUtil.getCurrentDay(callDate);
 						if (day != 1
-								&& processBO.getListHoliday(callDate,
+								&& postsaleBO.getListHoliday(callDate,
 										branch.getId()).isEmpty()) {
 							mapCallDates.put(branch.getId(),
-									Utils.getDateWithoutTime(callDate));
+									FacesUtil.getDateWithoutTime(callDate));
 							validate = false;
 							break;
 						}
@@ -249,13 +249,13 @@ public class Principal {
 				System.out.println("ACTUALIZANDO CITAS...");
 				// ACTUALIZAR TODAS LAS CITAS QUE NO FUERON ATENDIDAS
 
-				if (Utils.getCurrentHour(currentDate) >= 20) {
-					processBO.updateAppointment(currentDateString);
+				if (FacesUtil.getCurrentHour(currentDate) >= 20) {
+					postsaleBO.updateAppointment(currentDateString);
 				} else {
-					processBO.updateAppointment(yesterdayString);
+					postsaleBO.updateAppointment(yesterdayString);
 				}
 
-				List<CrmAppointment> listNoAttendet = processBO
+				List<CrmAppointment> listNoAttendet = postsaleBO
 						.getListAppointmentNoAttendet(currentDateString);
 
 				System.out.println("BUSCANDO CITAS INASISTIDAS...");
@@ -265,16 +265,16 @@ public class Principal {
 				crmLogDetail.setLogDate(currentDate);
 				crmLogDetail.setMessage("BUSCANDO CITAS INASISTIDAS... "
 						+ listNoAttendet.size() + " - " + currentDateString);
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 
 				count = 0;
 				for (CrmAppointment row : listNoAttendet) {
 					Boolean result = mapBlock.get(row.getCrmPatient() + "-"
-							+ Principal.NO_ATTENDET);
+							+ Postsale.NO_ATTENDET);
 					if (result == null || result == false) {
 						CrmCampaign crmCampaign = mapCampaign.get(row
 								.getCrmPatient().getId());
-						insertDetail(crmCampaign, row, Principal.NO_ATTENDET);
+						insertDetail(crmCampaign, row, Postsale.NO_ATTENDET);
 						count++;
 
 						String message = "No se encontro email: "
@@ -283,7 +283,7 @@ public class Principal {
 							boolean res = InfunsionSoft.assignNoAttended(row
 									.getCrmPatient().getEmail());
 							if (res) {
-								message = "Se generó tag de no atendido: "
+								message = "Se generï¿½ tag de no atendido: "
 										+ row.getCrmPatient().getEmail();
 								CrmInfunsion1 crmInfunsion1 = new CrmInfunsion1();
 								crmInfunsion1.setEmail(row.getCrmPatient()
@@ -292,7 +292,7 @@ public class Principal {
 								crmInfunsion1.setStatus(0);
 								crmInfunsion1
 										.setEventType(InfunsionSoft.EVENT_TYPE_2);
-								processBO.save(crmInfunsion1);
+								postsaleBO.save(crmInfunsion1);
 							}
 						} catch (Exception ex) {
 
@@ -302,7 +302,7 @@ public class Principal {
 						crmLogDetail.setCrmLog(crmLog);
 						crmLogDetail.setLogDate(currentDate);
 						crmLogDetail.setMessage(message);
-						processBO.save(crmLogDetail);
+						postsaleBO.save(crmLogDetail);
 					}
 				}
 
@@ -310,21 +310,21 @@ public class Principal {
 				crmLogDetail.setCrmLog(crmLog);
 				crmLogDetail.setLogDate(currentDate);
 				crmLogDetail.setMessage("BUSCANDO CITAS INASISTIDAS: " + count);
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 
 				System.out.println("BUSCANDO CITAS CONFIRMADAS...");
 
-				List<CrmAppointment> listConfirmed = processBO
+				List<CrmAppointment> listConfirmed = postsaleBO
 						.getListAppointmentConfirmed(tomorrowString,
 								currentDateString);
 				count = 0;
 				for (CrmAppointment row : listConfirmed) {
 					Boolean result = mapBlock.get(row.getCrmPatient() + "-"
-							+ Principal.CONFIRMED);
+							+ Postsale.CONFIRMED);
 					if (result == null || result == false) {
 						CrmCampaign crmCampaign = mapCampaign.get(row
 								.getCrmPatient().getId());
-						insertDetail(crmCampaign, row, Principal.CONFIRMED);
+						insertDetail(crmCampaign, row, Postsale.CONFIRMED);
 						count++;
 					}
 				}
@@ -334,63 +334,63 @@ public class Principal {
 				crmLogDetail.setCrmLog(crmLog);
 				crmLogDetail.setLogDate(currentDate);
 				crmLogDetail.setMessage("BUSCANDO CITAS CONFIRMADAS: " + count);
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 
 				System.out
 						.println("BUSCANDO PACIENTES CON MAS DE 25 DIAS SIN CITA CONTROL");
 
-				Date ago25Date = Utils.addDaysToDate(currentDate, -25);
-				String ago25DateString = Utils.formatDate(ago25Date,
+				Date ago25Date = FacesUtil.addDaysToDate(currentDate, -25);
+				String ago25DateString = FacesUtil.formatDate(ago25Date,
 						"yyyy-MM-dd");
-				List<CrmAppointment> listControl = processBO
+				List<CrmAppointment> listControl = postsaleBO
 						.getListAppointmentControl(ago25DateString);
 				count = 0;
 				for (CrmAppointment row : listControl) {
 					Boolean result = mapBlock.get(row.getCrmPatient() + "-"
-							+ Principal.CONTROL);
+							+ Postsale.CONTROL);
 					if (result == null || result == false) {
 						CrmCampaign crmCampaign = mapCampaign.get(row
 								.getCrmPatient().getId());
-						insertDetail(crmCampaign, row, Principal.CONTROL);
+						insertDetail(crmCampaign, row, Postsale.CONTROL);
 						count++;
 					}
 				}
 
-				// SIN CITAS DE CONTROL EN 25 DÍAS
+				// SIN CITAS DE CONTROL EN 25 Dï¿½AS
 				crmLogDetail = new CrmLogDetail();
 				crmLogDetail.setCrmLog(crmLog);
 				crmLogDetail.setLogDate(currentDate);
 				crmLogDetail
 						.setMessage("BUSCANDO PACIENTES CON MAS DE 25 DIAS SIN CITA CONTROL: "
 								+ count);
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 
 				System.out.println("ACTUALIZANDO FACTURAS CON SUS CITAS");
 
-				List<CrmSapMedicationDistinct> listDistinct = processBO
+				List<CrmSapMedicationDistinct> listDistinct = postsaleBO
 						.getListSapMedicationByLoadStateDistinct(processDateString);
 				count = 0;
 				for (CrmSapMedicationDistinct row : listDistinct) {
-					String rowInitDateString = Utils.formatDate(
-							Utils.addDaysToDate(row.getDateBill(), -3),
+					String rowInitDateString = FacesUtil.formatDate(
+							FacesUtil.addDaysToDate(row.getDateBill(), -3),
 							"yyyy-MM-dd");
-					CrmAppointment crmAppointment = processBO.getAppointment(
+					CrmAppointment crmAppointment = postsaleBO.getAppointment(
 							row.getDocPatient(), rowInitDateString,
-							Utils.formatDate(row.getDateBill(), "yyyy-MM-dd"),
+							FacesUtil.formatDate(row.getDateBill(), "yyyy-MM-dd"),
 							row.getTypeBill());
 
 					if (crmAppointment == null) {
-						rowInitDateString = Utils.formatDate(
-								Utils.addDaysToDate(row.getDateBill(), -30),
+						rowInitDateString = FacesUtil.formatDate(
+								FacesUtil.addDaysToDate(row.getDateBill(), -30),
 								"yyyy-MM-dd");
-						crmAppointment = processBO.getAppointment(row
-								.getDocPatient(), rowInitDateString, Utils
+						crmAppointment = postsaleBO.getAppointment(row
+								.getDocPatient(), rowInitDateString, FacesUtil
 								.formatDate(row.getDateBill(), "yyyy-MM-dd"),
 								row.getTypeBill());
 					}
 
 					if (crmAppointment != null) {
-						processBO.updateSapMedicationById(row.getIdBill(),
+						postsaleBO.updateSapMedicationById(row.getIdBill(),
 								row.getTypeBill(), crmAppointment.getId(),
 								crmLog.getId());
 						count++;
@@ -403,9 +403,9 @@ public class Principal {
 				crmLogDetail.setCrmLog(crmLog);
 				crmLogDetail.setLogDate(currentDate);
 				crmLogDetail.setMessage("FACTURAS ACTUALIZADAS: " + count);
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 
-				List<CrmAppointment> listClosed = processBO
+				List<CrmAppointment> listClosed = postsaleBO
 						.getListAppointmentClosed(processDateString);
 
 				System.out
@@ -416,15 +416,15 @@ public class Principal {
 				crmLogDetail
 						.setMessage("BUSCANDO MEDICAMENTOS Y TERAPIAS NO FACTURADAS: "
 								+ listClosed.size());
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 
 				for (CrmAppointment row : listClosed) {
-					List<CrmSapMedication> listSapMedication = processBO
+					List<CrmSapMedication> listSapMedication = postsaleBO
 							.getListSapMedicationByAppointment(row.getId());
 
 					boolean validate = false;
 					if (listSapMedication.size() > 0) {
-						List<VwAppointmentMedication> listVwAppointmentMedication = processBO
+						List<VwAppointmentMedication> listVwAppointmentMedication = postsaleBO
 								.getListAppointmentMedicationByCode(row
 										.getCode());
 						if (listVwAppointmentMedication.size() > listSapMedication
@@ -439,28 +439,28 @@ public class Principal {
 						crmInfunsion1.setEventDate(new Date());
 						crmInfunsion1.setStatus(0);
 						crmInfunsion1.setEventType(InfunsionSoft.EVENT_TYPE_3);
-						processBO.save(crmInfunsion1);
+						postsaleBO.save(crmInfunsion1);
 						validate = true;
 					}
 
 					if (validate) {
 						Boolean result = mapBlock.get(row.getCrmPatient() + "-"
-								+ Principal.MEDICATION);
+								+ Postsale.MEDICATION);
 						if (result == null || result == false) {
 							CrmCampaign crmCampaign = mapCampaign.get(row
 									.getCrmPatient().getId());
-							insertDetail(crmCampaign, row, Principal.MEDICATION);
+							insertDetail(crmCampaign, row, Postsale.MEDICATION);
 						}
 					}
 				}
 
-				processBO.updateCrmSapMedication(processDateString,
+				postsaleBO.updateCrmSapMedication(processDateString,
 						crmLog.getId());
 
 				count = 0;
-				for (CrmCampaignDetail row : processBO
+				for (CrmCampaignDetail row : postsaleBO
 						.getListCampaignDetailMedication(crmLog)) {
-					for (VwMedication row2 : processBO
+					for (VwMedication row2 : postsaleBO
 							.getListVwMedicationByAppointment(row
 									.getCrmAppointment().getId())) {
 						CrmCampaignMedication crmCampaignMedication = new CrmCampaignMedication(
@@ -469,7 +469,7 @@ public class Principal {
 								row2.getDescMaterial(), row2.getSold(),
 								row2.getUnit(), row2.getSaleUnit(),
 								row2.getPosology());
-						processBO.save(crmCampaignMedication);
+						postsaleBO.save(crmCampaignMedication);
 						count++;
 					}
 				}
@@ -480,7 +480,7 @@ public class Principal {
 				crmLogDetail
 						.setMessage("BUSCANDO MEDICAMENTOS Y TERAPIAS NO FACTURADAS: "
 								+ count);
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 
 				List<Integer> ids = new ArrayList<Integer>();
 				ids.add(1374);
@@ -498,30 +498,30 @@ public class Principal {
 					crmInfunsion1.setNames(row.getNames());
 					crmInfunsion1.setIdLog(crmLog.getId());
 					crmInfunsion1.setDisease(row.getDisease());
-					processBO.save(crmInfunsion1);
+					postsaleBO.save(crmInfunsion1);
 				}
 
-				List<CrmInfunsion1> listCrmInfunsion1 = processBO
+				List<CrmInfunsion1> listCrmInfunsion1 = postsaleBO
 						.getListCrmInfunsion1(currentDateString);
 				count = 0;
 				for (CrmInfunsion1 row : listCrmInfunsion1) {
-					String startDate = Utils.formatDate(row.getEventDate(),
+					String startDate = FacesUtil.formatDate(row.getEventDate(),
 							"yyyy-MM-dd");
-					String endDate = Utils.formatDate(
-							Utils.addDaysToDate(row.getEventDate(), 1),
+					String endDate = FacesUtil.formatDate(
+							FacesUtil.addDaysToDate(row.getEventDate(), 1),
 							"yyyy-MM-dd");
-					CrmAppointment crmAppointment = processBO
+					CrmAppointment crmAppointment = postsaleBO
 							.getAppointmentByEmail(row.getEmail(), startDate,
 									endDate);
 					if (crmAppointment != null) {
 						row.setStatus(1);
 						row.setCrmAppointment(crmAppointment);
-						processBO.save(row);
+						postsaleBO.save(row);
 						count++;
 						System.out.println("Actualizado: " + row.getEmail());
 					} else {
 						row.setStatus(2);
-						processBO.save(row);
+						postsaleBO.save(row);
 					}
 				}
 
@@ -531,9 +531,9 @@ public class Principal {
 				crmLogDetail
 						.setMessage("ACTUALIZANDO REGISTROS DE INFUNSIONSOFT: "
 								+ count);
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 
-				List<CrmInfusionTag> listCrmInfunsionTag = processBO
+				List<CrmInfusionTag> listCrmInfunsionTag = postsaleBO
 						.getListCrmInfunsionTag();
 
 				Date endDate = new Date();
@@ -556,7 +556,7 @@ public class Principal {
 						crmInfunsion2.setCrmInfusionTag(new CrmInfusionTag(row
 								.getId()));
 						crmInfunsion2.setCountForms(map.size());
-						processBO.save(crmInfunsion2);
+						postsaleBO.save(crmInfunsion2);
 						count++;
 					}
 					gcal.add(Calendar.DAY_OF_WEEK, 1);
@@ -568,14 +568,14 @@ public class Principal {
 				crmLogDetail
 						.setMessage("INSERTANDO REGISTROS REPORTE INFUNSIONSOFT: "
 								+ count);
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 
 				System.out.println("PROCESO TERMINADO EXITOSAMENTE");
 				crmLogDetail = new CrmLogDetail();
 				crmLogDetail.setCrmLog(crmLog);
 				crmLogDetail.setLogDate(currentDate);
 				crmLogDetail.setMessage("PROCESO TERMINADO EXITOSAMENTE");
-				processBO.save(crmLogDetail);
+				postsaleBO.save(crmLogDetail);
 			}
 		} catch (MalformedURLException | XmlRpcException ex) {
 			System.out.println("PROCESO TERMINADO CON ERRORES InfunsionSoft: "
@@ -585,7 +585,7 @@ public class Principal {
 			crmLogDetail.setLogDate(currentDate);
 			crmLogDetail.setMessage("PROCESO TERMINADO CON ERRORES: "
 					+ ex.getMessage());
-			processBO.save(crmLogDetail);
+			postsaleBO.save(crmLogDetail);
 		} catch (Exception ex) {
 			System.out.println("PROCESO TERMINADO CON ERRORES: "
 					+ ex.getMessage());
@@ -594,13 +594,13 @@ public class Principal {
 			crmLogDetail.setLogDate(currentDate);
 			crmLogDetail.setMessage("PROCESO TERMINADO CON ERRORES: "
 					+ ex.getMessage());
-			processBO.save(crmLogDetail);
+			postsaleBO.save(crmLogDetail);
 		}
 
 	}
 
 	public static void main(String[] args) {
-		Principal principal = new Principal();
+		Postsale principal = new Postsale();
 		principal.execute();
 	}
 }

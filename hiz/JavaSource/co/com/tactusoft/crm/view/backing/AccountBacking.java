@@ -14,18 +14,12 @@ import org.springframework.context.annotation.Scope;
 
 import co.com.tactusoft.crm.controller.bo.ProcessBo;
 import co.com.tactusoft.crm.controller.bo.TablesBo;
-import co.com.tactusoft.crm.model.entities.CrmCity;
-import co.com.tactusoft.crm.model.entities.CrmCountry;
 import co.com.tactusoft.crm.model.entities.CrmOccupation;
 import co.com.tactusoft.crm.model.entities.CrmPatient;
 import co.com.tactusoft.crm.model.entities.CrmProfile;
-import co.com.tactusoft.crm.model.entities.CrmRegion;
-import co.com.tactusoft.crm.util.FacesUtil;
 import co.com.tactusoft.crm.util.Constant;
-import co.com.tactusoft.crm.util.SugarEnvironment;
+import co.com.tactusoft.crm.util.FacesUtil;
 import co.com.tactusoft.crm.view.datamodel.PatientDataModel;
-
-import com.tactusoft.webservice.client.execute.SugarWS;
 
 @Named
 @Scope("view")

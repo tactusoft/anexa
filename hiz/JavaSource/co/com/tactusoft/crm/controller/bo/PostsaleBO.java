@@ -1,14 +1,15 @@
-package co.com.tactusoft.crm.postsale.bo;
+package co.com.tactusoft.crm.controller.bo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
 import org.hibernate.exception.ConstraintViolationException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
 
 import co.com.tactusoft.crm.model.dao.CustomHibernateDao;
 import co.com.tactusoft.crm.model.entities.CrmAppointment;
@@ -27,14 +28,14 @@ import co.com.tactusoft.crm.model.entities.CrmUser;
 import co.com.tactusoft.crm.model.entities.VwAppointmentMedication;
 import co.com.tactusoft.crm.model.entities.VwMedication;
 import co.com.tactusoft.crm.model.util.FacesUtilModel;
-import co.com.tactusoft.crm.postsale.util.Utils;
+import co.com.tactusoft.crm.util.FacesUtil;
 
-@Service
-public class ProcessBO implements Serializable {
+@Named
+public class PostsaleBO implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Autowired
+	@Inject
 	private CustomHibernateDao dao;
 
 	public void updateAppointment(String dateString) {
@@ -306,8 +307,8 @@ public class ProcessBO implements Serializable {
 	public int getLogLastDay(Date currentDate) {
 		CrmLog lastLog = (CrmLog) dao.find(
 				"FROM CrmLog o WHERE id = (SELECT MAX(id) FROM CrmLog)").get(0);
-		Date today = Utils.getDateWithoutTime(currentDate);
-		Date lastDate = Utils.getDateWithoutTime(lastLog.getLogDate());
+		Date today = FacesUtil.getDateWithoutTime(currentDate);
+		Date lastDate = FacesUtil.getDateWithoutTime(lastLog.getLogDate());
 		long diff = Math.abs(today.getTime() - lastDate.getTime());
 		Long diffDays = diff / (24 * 60 * 60 * 1000);
 		return diffDays.intValue();

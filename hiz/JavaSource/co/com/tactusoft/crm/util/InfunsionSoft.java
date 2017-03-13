@@ -6,23 +6,35 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 
 import co.com.tactusoft.crm.model.entities.CrmPatient;
 import co.com.tactusoft.crm.model.entities.CrmProfile;
+import co.com.tactusoft.crm.view.beans.InfusionEntity;
 
 public class InfunsionSoft {
 
 	final static String KEY = "ed9e16015fc0c0cc5f6f301f8c339dd8";
 	final static int TAG_APPOINTMENT = 194;
-	final static int TAG_START_MEDICATION = 128;
 	final static int TAG_NO_ATTENDET = 130;
-	final static int CAMPAIGN_APPOINTMENT = 28;
+	final static int TAG_START_MEDICATION = 128;
+	final static int TAG_NO_START_MEDICATION = 148;
+	final static int TAG_CONTROL_1 = 132;
+	final static int TAG_CONTROL_2 = 138;
+	final static int TAG_CONTROL_3 = 142;
+	final static int TAG_NO_CONTROL_1 = 136;
+	final static int TAG_NO_CONTROL_2 = 140;
+	final static int TAG_NO_CONTROL_3 = 144;
+
+	public final static String EVENT_TYPE_1 = "REGISTRO_FORMULARIO";
+	public final static String EVENT_TYPE_2 = "CAMPANA_NO_ATENDIDO";
+	public final static String EVENT_TYPE_3 = "CAMPANA_NO_COMENZO_MEDICACION";
 
 	public static XmlRpcClient getClient() throws MalformedURLException {
 		XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl();
@@ -30,66 +42,6 @@ public class InfunsionSoft {
 		XmlRpcClient client = new XmlRpcClient();
 		client.setConfig(config);
 		return client;
-	}
-
-	public static String getContactId(String email)
-			throws MalformedURLException, XmlRpcException {
-		XmlRpcClient client = getClient();
-
-		List<Object> fields = new ArrayList<>(); // What fields we will be
-													// selecting
-		fields.add("Id");
-
-		List<Object> parameters = new ArrayList<>();
-		parameters.add(KEY); // Secure key
-		parameters.add("Contact"); // What table we are looking in
-		parameters.add(50); // How many records to return
-		parameters.add(0); // Which page of results to display
-		parameters.add("email"); // The field we are querying on
-		parameters.add(!FacesUtil.isEmptyOrBlank(email) ? email : "");
-		parameters.add(fields); // what fields to select on return
-
-		String contactId = null;
-		Object[] contacts = (Object[]) client.execute(
-				"DataService.findByField", parameters);
-		for (Object contact1 : contacts) {
-			// Each item in the array is a struct
-			Map<?, ?> contact = (Map<?, ?>) contact1;
-			System.out.println("InfusionSoft1: " + contact.get("Id"));
-			contactId = contact.get("Id").toString();
-			break;
-		}
-		return contactId;
-	}
-
-	public static String getContactIdByPhone(String phoneNum)
-			throws MalformedURLException, XmlRpcException {
-		XmlRpcClient client = getClient();
-
-		List<Object> fields = new ArrayList<>(); // What fields we will be
-													// selecting
-		fields.add("Id");
-
-		List<Object> parameters = new ArrayList<>();
-		parameters.add(KEY); // Secure key
-		parameters.add("Contact"); // What table we are looking in
-		parameters.add(50); // How many records to return
-		parameters.add(0); // Which page of results to display
-		parameters.add("Phone1"); // The field we are querying on
-		parameters.add(!FacesUtil.isEmptyOrBlank(phoneNum) ? phoneNum : "");
-		parameters.add(fields); // what fields to select on return
-
-		String contactId = null;
-		Object[] contacts = (Object[]) client.execute(
-				"DataService.findByField", parameters);
-		for (Object contact1 : contacts) {
-			// Each item in the array is a struct
-			Map<?, ?> contact = (Map<?, ?>) contact1;
-			System.out.println("InfusionSoft1: " + contact.get("Id"));
-			contactId = contact.get("Id").toString();
-			break;
-		}
-		return contactId;
 	}
 
 	private static CrmPatient getPatient(Map<?, ?> contact) {
@@ -230,6 +182,84 @@ public class InfunsionSoft {
 		return result;
 	}
 
+	public static String getContactId(String email)
+			throws MalformedURLException, XmlRpcException {
+		XmlRpcClient client = getClient();
+
+		List<Object> fields = new ArrayList<>(); // What fields we will be
+													// selecting
+		fields.add("Id");
+
+		List<Object> parameters = new ArrayList<>();
+		parameters.add(KEY); // Secure key
+		parameters.add("Contact"); // What table we are looking in
+		parameters.add(50); // How many records to return
+		parameters.add(0); // Which page of results to display
+		parameters.add("email"); // The field we are querying on
+		parameters.add(email); // THe data to query on
+		parameters.add(fields); // what fields to select on return
+
+		String contactId = null;
+		Object[] contacts = (Object[]) client.execute(
+				"DataService.findByField", parameters);
+		for (Object contact1 : contacts) {
+			// Each item in the array is a struct
+			Map<?, ?> contact = (Map<?, ?>) contact1;
+			System.out.println("InfusionSoft1: " + contact.get("Id"));
+			contactId = contact.get("Id").toString();
+			break;
+		}
+		return contactId;
+	}
+
+	public static String getDiseaseByEmail(String email)
+			throws MalformedURLException, XmlRpcException {
+		XmlRpcClient client = getClient();
+
+		List<Object> fields = new ArrayList<>(); // What fields we will be
+													// selecting
+		fields.add("_Enfermedad0");
+
+		List<Object> parameters = new ArrayList<>();
+		parameters.add(KEY); // Secure key
+		parameters.add("Contact"); // What table we are looking in
+		parameters.add(50); // How many records to return
+		parameters.add(0); // Which page of results to display
+		parameters.add("email"); // The field we are querying on
+		parameters.add(email); // THe data to query on
+		parameters.add(fields); // what fields to select on return
+
+		String contactId = null;
+		Object[] contacts = (Object[]) client.execute(
+				"DataService.findByField", parameters);
+		for (Object contact1 : contacts) {
+			// Each item in the array is a struct
+			Map<?, ?> contact = (Map<?, ?>) contact1;
+			// System.out.println("InfusionSoft1: " +
+			// contact.get("_Enfermedad0"));
+			contactId = contact.get("_Enfermedad0") != null ? contact.get(
+					"_Enfermedad0").toString() : "";
+			break;
+		}
+		return contactId;
+	}
+
+	public static Boolean startMedication(String email) {
+		try {
+			String contactId = InfunsionSoft.getContactId(email);
+			if (!FacesUtil.isEmptyOrBlank(contactId)) {
+				return addTag(contactId, TAG_START_MEDICATION);
+			} else {
+				System.out.println("INFUSIONSOFT: No se encontro email: "
+						+ email);
+			}
+		} catch (MalformedURLException | XmlRpcException e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+
 	public static Boolean assignAppointment(String email, Date date,
 			String branch, String address) throws MalformedURLException,
 			XmlRpcException {
@@ -256,6 +286,8 @@ public class InfunsionSoft {
 					parameters);
 			System.out.println("Contact added was " + result);
 
+			removeTag(contactId, TAG_NO_ATTENDET);
+			removeTag(contactId, TAG_APPOINTMENT);
 			addTag(contactId, TAG_APPOINTMENT);
 		} else {
 			System.out.println("INFUSIONSOFT: No se encontro email: " + email);
@@ -263,35 +295,20 @@ public class InfunsionSoft {
 		return success;
 	}
 
-	public static Boolean startMedication(String email) {
-		try {
-			String contactId = InfunsionSoft.getContactId(email);
-			if (!FacesUtil.isEmptyOrBlank(contactId)) {
-				return addTag(contactId, TAG_START_MEDICATION);
-			} else {
-				System.out.println("INFUSIONSOFT: No se encontro email: "
-						+ email);
-			}
-		} catch (MalformedURLException | XmlRpcException e) {
-			e.printStackTrace();
-		}
-
-		return false;
-	}
-
-	public static Boolean assignNoAttended(String email)
+	public static boolean assignNoAttended(String email)
 			throws MalformedURLException, XmlRpcException {
 		String contactId = InfunsionSoft.getContactId(email);
-		Boolean success = null;
+		Boolean success = false;
 		if (!FacesUtil.isEmptyOrBlank(contactId)) {
+			removeTag(contactId, TAG_APPOINTMENT);
+			removeTag(contactId, TAG_NO_ATTENDET);
 			addTag(contactId, TAG_NO_ATTENDET);
-		} else {
-			System.out.println("INFUSIONSOFT: No se encontro email: " + email);
+			success = true;
 		}
 		return success;
 	}
 
-	public static boolean removeTag(String contactId, int tag)
+	private static boolean removeTag(String contactId, int tag)
 			throws MalformedURLException, XmlRpcException {
 		XmlRpcClient client = getClient();
 		List<Object> parameters = new ArrayList<>();
@@ -327,46 +344,138 @@ public class InfunsionSoft {
 		return success;
 	}
 
-	public static boolean addCampaign(String contactId, int campaign)
+	public static boolean assignNoStartMedication(String email)
 			throws MalformedURLException, XmlRpcException {
-		XmlRpcClient client = getClient();
-		List<Object> parameters = new ArrayList<>();
-		parameters.add(KEY); // The secure key
-		parameters.add(contactId); // The secure key
-		parameters.add(campaign); // The data to be added
-
-		// Make the call
-		Boolean success = (Boolean) client.execute(
-				"ContactService.addToCampaign", parameters);
-		System.out.println("INFUSIONSOFT: Se agregó Secuencia " + campaign
-				+ " - " + success);
-
+		String contactId = InfunsionSoft.getContactId(email);
+		Boolean success = false;
+		if (!FacesUtil.isEmptyOrBlank(contactId)) {
+			removeTag(contactId, TAG_START_MEDICATION);
+			removeTag(contactId, TAG_NO_START_MEDICATION);
+			addTag(contactId, TAG_NO_START_MEDICATION);
+			success = true;
+		}
 		return success;
 	}
 
-	public static boolean removeCampaign(String contactId, int campaign)
+	private static List<InfusionEntity> getContactsByGroupPage(
+			List<Integer> groupIds, Date dateCreated, int page)
+			throws MalformedURLException, XmlRpcException {
+		List<InfusionEntity> results = new LinkedList<>();
+		XmlRpcClient client = getClient();
+
+		List<Object> fields = new ArrayList<>(); // What fields we will be
+													// selecting
+		fields.add("Contact.Email");
+		fields.add("Contact.Phone1");
+		fields.add("Contact.FirstName");
+		fields.add("Contact.LastName");
+		fields.add("DateCreated");
+
+		Map<String, Object> queryData = new HashMap<String, Object>();
+		queryData.put("GroupId", groupIds);
+		queryData.put("DateCreated",
+				FacesUtil.formatDate(dateCreated, "yyyy-MM-dd") + "%");
+		// queryData.put("DateCreated", "~>=~20170201");
+
+		List<Object> parameters = new ArrayList<>();
+		parameters.add(KEY); // Secure key
+		parameters.add("ContactGroupAssign"); // What table we are looking in
+		parameters.add(1000); // How many records to return
+		parameters.add(page); // Which page of results to display
+		parameters.add(queryData); // THe data to query on
+		parameters.add(fields); // what fields to select on return
+
+		Object[] contacts = (Object[]) client.execute("DataService.query",
+				parameters);
+		for (Object contact1 : contacts) {
+			// Each item in the array is a struct
+			Map<?, ?> contact = (Map<?, ?>) contact1;
+			Object email = contact.get("Contact.Email");
+			if (email != null) {
+				Date date = FacesUtil.stringTOSDateEN(contact
+						.get("DateCreated").toString(),
+						"EEEE MMM dd HH:mm:ss ZZZ yyyy");
+
+				String names = "";
+				if (contact.get("Contact.FirstName") != null) {
+					names = contact.get("Contact.FirstName").toString();
+				}
+				if (contact.get("Contact.LastName") != null) {
+					names += contact.get("Contact.LastName").toString();
+				}
+
+				String phoneNum = null;
+				if (contact.get("Contact.Phone1") != null) {
+					phoneNum = contact.get("Contact.Phone1").toString()
+							.replace("(", "").replace(")", "").replace("-", "")
+							.replace(" ", "");
+				}
+
+				InfusionEntity infusionEntity = new InfusionEntity();
+				infusionEntity.setEmail(email.toString());
+				infusionEntity.setPhone(phoneNum);
+				infusionEntity.setNames(names);
+				infusionEntity.setEventDate(date);
+				String disease = getDiseaseByEmail(email.toString());
+				infusionEntity.setDisease(disease);
+				results.add(infusionEntity);
+			}
+		}
+		return results;
+	}
+
+	public static List<InfusionEntity> getContactsByGroup(
+			List<Integer> groupIds, Date dateCreated)
+			throws MalformedURLException, XmlRpcException {
+		List<InfusionEntity> results = new LinkedList<>();
+		int page = 0;
+		while (true) {
+			List<InfusionEntity> res = getContactsByGroupPage(groupIds,
+					dateCreated, page);
+			results.addAll(res);
+			page++;
+			if (res.size() < 1000) {
+				break;
+			}
+		}
+		return results;
+	}
+
+	public static String getContactIdByPhone(String phoneNum)
 			throws MalformedURLException, XmlRpcException {
 		XmlRpcClient client = getClient();
+
+		List<Object> fields = new ArrayList<>(); // What fields we will be
+													// selecting
+		fields.add("Id");
+
 		List<Object> parameters = new ArrayList<>();
-		parameters = new ArrayList<>();
-		parameters.add(KEY); // The secure key
-		parameters.add(contactId); // The secure key
-		parameters.add(campaign); // The data to be added
+		parameters.add(KEY); // Secure key
+		parameters.add("Contact"); // What table we are looking in
+		parameters.add(50); // How many records to return
+		parameters.add(0); // Which page of results to display
+		parameters.add("Phone1"); // The field we are querying on
+		parameters.add(!FacesUtil.isEmptyOrBlank(phoneNum) ? phoneNum : "");
+		parameters.add(fields); // what fields to select on return
 
-		// Make the call
-		Boolean success = (Boolean) client.execute(
-				"ContactService.removeFromCampaign", parameters);
-		System.out.println("INFUSIONSOFT: Se removió Secuencia " + campaign
-				+ " - " + success);
-
-		return success;
+		String contactId = null;
+		Object[] contacts = (Object[]) client.execute(
+				"DataService.findByField", parameters);
+		for (Object contact1 : contacts) {
+			// Each item in the array is a struct
+			Map<?, ?> contact = (Map<?, ?>) contact1;
+			System.out.println("InfusionSoft1: " + contact.get("Id"));
+			contactId = contact.get("Id").toString();
+			break;
+		}
+		return contactId;
 	}
 
 	public static String createContact(String operation, String contactId,
 			String doc, String names, String lastNames, String email,
-			String address, String mobilePhone, String homePhone, String city,
-			String state, String country) throws MalformedURLException,
-			XmlRpcException {
+			String address, String mobilePhone, String homePhone,
+			String country, String state, String city)
+			throws MalformedURLException, XmlRpcException {
 		XmlRpcClient client = getClient();
 		List<Object> parameters = new ArrayList<>();
 
@@ -404,12 +513,13 @@ public class InfunsionSoft {
 		contactData.put("ContactType", "Prospect");
 
 		parameters.add(KEY); // The secure key
-		String operationType = "ContactService.add";
+		String operationType = "ContactService.addWithDupCheck";
 		if (operation.equals(Constant.CONTACT_UPDATE)) {
-			operationType = "ContactService.update";
+			operationType = "ContactService.addWithDupCheck";
 			parameters.add(contactId); // The secure key
 		}
 		parameters.add(contactData); // The data to be added
+		parameters.add("Email");
 
 		// Make the call
 		String result = client.execute(operationType, parameters).toString();
@@ -428,25 +538,53 @@ public class InfunsionSoft {
 
 	public static void main(String[] args) {
 		try {
-			String phoneNum = "3104807922";
+			// InfunsionSoft.assignAppointment("john@doe.com", new Date(),
+			// "Clinica", "Carrera 20");
 
-			// CrmPatient crmPatient =
-			// InfunsionSoft.getContactByPhone(phoneNum);
-			// System.out.println(crmPatient.getCodeSap());
-
-			String id = createContact(Constant.CONTACT_CREATE, "22088",
-					"8647362", "Carlos Arturo", "Sarmiento Royero",
-					"tactusoft@hotmail.com", null, "3003044115", "4769778",
-					"Bogota", "Cundinamarca", "Colombia");
-
-			System.out.println(id);
+			// InfunsionSoft.getContactId("Anaagudelo1980@gmail.com");
 
 			/*
-			 * InfunsionSoft.assignAppointment("tactusoft@hotmail.com", new
-			 * Date(), "Bogota - Country", "Bogota - Country");
+			 * Date currentDate = FacesUtil.stringTOSDate("13/02/2017 21",
+			 * "dd/MM/yyyy HH");
+			 * 
+			 * List<Integer> ids = new ArrayList<Integer>(); ids.add(1374);
+			 * ids.add(1380);
+			 * 
+			 * List<InfusionEntity> list374 = InfunsionSoft.getContactsByGroup(
+			 * ids, currentDate); for (InfusionEntity row : list374) {
+			 * CrmInfunsion1 crmInfunsion1 = new CrmInfunsion1();
+			 * crmInfunsion1.setEventType(EVENT_TYPE_1);
+			 * crmInfunsion1.setEmail(row.getEmail());
+			 * crmInfunsion1.setEventDate(row.getEventDate());
+			 * crmInfunsion1.setStatus(0);
+			 * crmInfunsion1.setDisease(row.getDisease()); }
 			 */
 
-			// InfunsionSoft.addTag(id, TAG_START_MEDICATION);
+			/*
+			 * SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd"); Date
+			 * currentDate = FacesUtil.stringTOSDate("01/02/2017",
+			 * "dd/MM/yyyy"); Date endDate = new Date();
+			 * 
+			 * GregorianCalendar gcal = new GregorianCalendar();
+			 * gcal.setTime(currentDate); while (!gcal.getTime().after(endDate))
+			 * { Date date = gcal.getTime(); List<Integer> ids = new
+			 * ArrayList<Integer>(); ids.add(1372); List<InfusionEntity>
+			 * formsList = InfunsionSoft.getContactsByGroup( ids, date);
+			 * System.out.println(date + " - " + formsList.size());
+			 * gcal.add(Calendar.DAY_OF_WEEK, 1); }
+			 */
+
+			List<Integer> ids = new ArrayList<Integer>();
+			ids.add(1360);
+
+			Date date = FacesUtil.stringTOSDate("22/02/2017", "dd/MM/yyyy");
+
+			List<InfusionEntity> formsList = InfunsionSoft.getContactsByGroup(
+					ids, date);
+			for (InfusionEntity row : formsList) {
+				System.out.println(row.getNames() + ";" + row.getEmail() + ";"
+						+ row.getEventDate() + ";" + row.getDisease());
+			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (XmlRpcException e) {
