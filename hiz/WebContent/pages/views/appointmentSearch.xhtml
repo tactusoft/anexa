@@ -70,6 +70,18 @@
 						<f:selectItems value="#{appointmentSearchBacking.listStates}" />
 					</p:selectOneMenu>
 
+					<h:outputLabel value="#{msg['app_invalid_status']}" />
+					<p:selectOneMenu value="#{appointmentSearchBacking.invalidApp}"
+						style="width:400px">
+						<f:selectItem itemValue="-1" itemLabel="#{msg['glb_all_value']}" />
+						<f:selectItem itemValue="1"
+							itemLabel="#{msg['app_invalid_status_1']}" />
+						<f:selectItem itemValue="2"
+							itemLabel="#{msg['app_invalid_status_2']}" />
+					</p:selectOneMenu>
+					<h:outputText value="" />
+					<h:outputText value="" />
+
 					<h:outputText value="Fecha de la cita: " />
 					<p:selectBooleanCheckbox value="#{appointmentSearchBacking.dates}">
 						<p:ajax update="calSD calED" />
@@ -313,6 +325,13 @@
 							<h:outputText value="#{msg['app_reason_rollback']}" />
 						</f:facet>
 						<h:outputLabel value="#{rec.rollbackReason}" />
+					</p:column>
+
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_invalid_status_1']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.invalidStatus?'SI':'NO'}" />
 					</p:column>
 
 				</p:dataTable>

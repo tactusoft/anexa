@@ -45,6 +45,16 @@
 						required="true" label="#{msg['src_end_date']}"
 						readonlyInput="true" pattern="dd/MM/yyyy" showOn="button"
 						navigator="true" locale="es" />
+
+					<h:outputLabel value="#{msg['app_invalid_status']}" />
+					<p:selectOneMenu value="#{reportInfusion2Backing.invalidApp}"
+						style="width:200px">
+						<f:selectItem itemValue="-1" itemLabel="#{msg['glb_all_value']}" />
+						<f:selectItem itemValue="1"
+							itemLabel="#{msg['app_invalid_status_1']}" />
+						<f:selectItem itemValue="2"
+							itemLabel="#{msg['app_invalid_status_2']}" />
+					</p:selectOneMenu>
 				</h:panelGrid>
 
 				<p:spacer height="5" />
@@ -63,7 +73,7 @@
 							value="#{empty rec.patCellNumber?rec.patPhoneNumber:rec.patCellNumber}" />
 					</p:column>
 
-					<p:column filterBy="names" filterMatchMode="contains">
+					<p:column filterBy="patFirstnames" filterMatchMode="contains">
 						<f:facet name="header">
 							<h:outputLabel value="#{msg['doc_names']}" />
 						</f:facet>
@@ -85,6 +95,13 @@
 						<h:outputLabel value="#{rec.startAppointmentDate}">
 							<f:convertDateTime pattern="dd/MM/yyyy" />
 						</h:outputLabel>
+					</p:column>
+
+					<p:column filterBy="#{rec.invalidStatus?'SI':'NO'}" filterMatchMode="contains">
+						<f:facet name="header">
+							<h:outputText value="#{msg['app_invalid_status_1']}" />
+						</f:facet>
+						<h:outputLabel value="#{rec.invalidStatus?'SI':'NO'}" />
 					</p:column>
 
 				</p:dataTable>

@@ -63,6 +63,7 @@ public class CrmAppointment implements java.io.Serializable {
 	private String managementPlan;
 	private String recommendations;
 	private String successStories;
+	private Boolean invalidStatus;
 	private Set<CrmDiagnosis> crmDiagnosises = new HashSet<CrmDiagnosis>(0);
 	private Set<CrmMedication> crmMedications = new HashSet<CrmMedication>(0);
 
@@ -463,6 +464,15 @@ public class CrmAppointment implements java.io.Serializable {
 
 	public void setSuccessStories(String successStories) {
 		this.successStories = successStories;
+	}
+
+	@Column(name = "invalid_status")
+	public Boolean getInvalidStatus() {
+		return invalidStatus;
+	}
+
+	public void setInvalidStatus(Boolean invalidStatus) {
+		this.invalidStatus = invalidStatus;
 	}
 
 	@Temporal(TemporalType.TIMESTAMP)

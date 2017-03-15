@@ -22,6 +22,7 @@ public class VwAppointment implements java.io.Serializable {
 	private Date endAppointmentDate;
 	private Integer minutes;
 	private Integer state;
+	private Boolean invalidStatus;
 	private BigDecimal patId;
 	private String patCode;
 	private String patCodeSap;
@@ -248,6 +249,15 @@ public class VwAppointment implements java.io.Serializable {
 
 	public void setState(Integer state) {
 		this.state = state;
+	}
+
+	@Column(name = "invalid_status")
+	public Boolean getInvalidStatus() {
+		return invalidStatus;
+	}
+
+	public void setInvalidStatus(Boolean invalidStatus) {
+		this.invalidStatus = invalidStatus;
 	}
 
 	@Column(name = "pat_id", nullable = false, scale = 0)

@@ -321,9 +321,9 @@ public class InfunsionSoft {
 			}*/
 			
 			List<Integer> ids = new ArrayList<Integer>();
-			ids.add(1360);
+			ids.add(1262);
 			
-			Date date = Utils.stringTOSDate("22/02/2017", "dd/MM/yyyy");
+			Date date = Utils.stringTOSDate("27/02/2017", "dd/MM/yyyy");
 			
 			List<InfusionEntity> formsList = InfunsionSoft.getContactsByGroup(
 					ids, date);

@@ -31,6 +31,7 @@ public class AppointmentSearchBacking extends BaseBacking {
 	private Date startDateCreate;
 	private Date endDateCreate;
 	private int state;
+	private int invalidApp;
 
 	private List<VwAppointment> listAppointment;
 	private VwAppointmentDataModel appointmentModel;
@@ -97,6 +98,14 @@ public class AppointmentSearchBacking extends BaseBacking {
 		this.state = state;
 	}
 
+	public int getInvalidApp() {
+		return invalidApp;
+	}
+
+	public void setInvalidApp(int invalidApp) {
+		this.invalidApp = invalidApp;
+	}
+
 	public List<VwAppointment> getListAppointment() {
 		return listAppointment;
 	}
@@ -130,6 +139,8 @@ public class AppointmentSearchBacking extends BaseBacking {
 	}
 
 	public void newAction(ActionEvent event) {
+		invalidApp = -1;
+
 		listAppointment = new LinkedList<VwAppointment>();
 		appointmentModel = new VwAppointmentDataModel(listAppointment);
 		selectedAppointment = new CrmAppointment();
@@ -211,6 +222,12 @@ public class AppointmentSearchBacking extends BaseBacking {
 				where = where + " and o.state = " + state;
 			}
 
+			if (invalidApp == 1) {
+				where = where + " and o.invalidStatus = true";
+			} else if (invalidApp == 2) {
+				where = where + " and o.invalidStatus is null";
+			}
+
 			listAppointment = processService
 					.getListAppointmentByCriteria(where);
 			appointmentModel = new VwAppointmentDataModel(listAppointment);
@@ -230,7 +247,8 @@ public class AppointmentSearchBacking extends BaseBacking {
 
 	public void exportElastix() {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(",Nombres,Correo,Estado,Doctor,FechaHora,Procedimiento,Sucursal");
+		stringBuilder
+				.append(",Nombres,Correo,Estado,Doctor,FechaHora,Procedimiento,Sucursal,Con Factura sin HC");
 		stringBuilder.append(Constant.NEW_LINE);
 		for (VwAppointment row : listAppointment) {
 			if (!FacesUtil.isEmptyOrBlank(row.getPatCellNumber())
@@ -256,7 +274,13 @@ public class AppointmentSearchBacking extends BaseBacking {
 						+ ","
 						+ row.getStartAppointmentDate()
 						+ ","
-						+ row.getPrcDetName() + "," + row.getBranchName());
+						+ row.getPrcDetName()
+						+ ","
+						+ row.getBranchName()
+						+ ","
+						+ ((row.getInvalidStatus() != null && row
+								.getInvalidStatus().booleanValue()) ? "SI"
+								: "NO"));
 				stringBuilder.append(Constant.NEW_LINE);
 			}
 		}

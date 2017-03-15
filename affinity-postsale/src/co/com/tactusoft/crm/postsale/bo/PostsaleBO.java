@@ -216,6 +216,24 @@ public class PostsaleBO implements Serializable {
 		}
 		return result;
 	}
+	
+	public CrmAppointment getAppointmentNoAttended(String doc, String initDate,
+			String endDate, String typeBill) {
+		List<CrmAppointment> list = dao
+				.find("FROM CrmAppointment o WHERE o.crmPatient.doc = '"
+						+ doc
+						+ "' AND Date(o.startAppointmentDate) BETWEEN '"
+						+ initDate
+						+ "' AND '"
+						+ endDate
+						+ "' AND o.state = 5 "
+						+ " ORDER BY o.startAppointmentDate DESC", 1);
+		CrmAppointment result = null;
+		if (list.size() > 0) {
+			result = list.get(0);
+		}
+		return result;
+	}
 
 	public CrmAppointment getAppointmentByEmail(String email, String initDate,
 			String endDate) {

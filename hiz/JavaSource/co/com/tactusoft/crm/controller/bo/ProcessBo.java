@@ -2479,16 +2479,25 @@ public class ProcessBo implements Serializable {
 	}
 
 	public List<VwAppointment> getListAppointmentNoAttendetByDates(
-			Date startDate, Date endDate) {
+			Date startDate, Date endDate, int invalidApp) {
 		String startDateString = FacesUtil.formatDate(startDate, "yyyy-MM-dd")
 				+ " 00:00:00";
 		String endDateString = FacesUtil.formatDate(endDate, "yyyy-MM-dd")
 				+ " 23:59:59";
+		String where = "'";
+		if (invalidApp == 1) {
+			where = where + " and o.invalidStatus = true";
+		} else if (invalidApp == 2) {
+			where = where + " and o.invalidStatus is null";
+		}
+
 		return dao
 				.find("from VwAppointment o where o.state = 5 and o.startAppointmentDate >= '"
 						+ startDateString
 						+ "' and o.endAppointmentDate <= '"
-						+ endDateString + "' order by o.startAppointmentDate");
+						+ endDateString
+						+ where
+						+ " order by o.startAppointmentDate");
 	}
 
 	public List<CrmInfunsion2> getInfunsionbyDates(String startDate,

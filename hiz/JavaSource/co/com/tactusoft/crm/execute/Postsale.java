@@ -49,10 +49,10 @@ public class Postsale {
 	private static int CONFIRMED = 2;
 	private static int CONTROL = 3;
 	private static int MEDICATION = 4;
-	
+
 	@Inject
 	private PostsaleBO postsaleBO;
-	
+
 	@Inject
 	private SapBO sapBO;
 
@@ -74,8 +74,8 @@ public class Postsale {
 		if (crmCampaign == null) {
 			crmCampaign = new CrmCampaign();
 
-			CrmUser crmUser = postsaleBO
-					.getUser(crmBranch, callDateString, type);
+			CrmUser crmUser = postsaleBO.getUser(crmBranch, callDateString,
+					type);
 			if (crmUser == null) {
 				crmUser = new CrmUser();
 				crmUser.setId(new BigDecimal(3));
@@ -109,9 +109,11 @@ public class Postsale {
 	public void execute() {
 		System.out.println("INCIANDO PROCESO...");
 		Date currentDate = new Date();
-		//currentDate = FacesUtil.stringTOSDate("11/03/2017 21", "dd/MM/yyyy HH");
+		// currentDate = FacesUtil.stringTOSDate("11/03/2017 21",
+		// "dd/MM/yyyy HH");
 
-		String currentDateString = FacesUtil.formatDate(currentDate, "yyyy-MM-dd");
+		String currentDateString = FacesUtil.formatDate(currentDate,
+				"yyyy-MM-dd");
 		CrmLogDetail crmLogDetail = new CrmLogDetail();
 
 		try {
@@ -144,7 +146,7 @@ public class Postsale {
 				postsaleBO.save(crmLogDetail);
 				InfunsionSoft.getContactId("tactusoft@hotmail.com");
 
-				System.out.println("EXTRACCI�N DE POS...");
+				System.out.println("EXTRACCIÓN DE POS...");
 
 				List<CrmSapMedication> listAddMedication = new LinkedList<CrmSapMedication>();
 				List<SapMedication> listMedication = sapBO
@@ -171,7 +173,7 @@ public class Postsale {
 				crmLogDetail = new CrmLogDetail();
 				crmLogDetail.setCrmLog(crmLog);
 				crmLogDetail.setLogDate(currentDate);
-				crmLogDetail.setMessage("EXTRACCI�N DE POS: " + count);
+				crmLogDetail.setMessage("EXTRACCIÓN DE POS: " + count);
 				postsaleBO.save(crmLogDetail);
 
 				System.out.println("Buscar pacientes bloqueados...");
@@ -196,12 +198,12 @@ public class Postsale {
 								.valueOf(listBlockPatient.size())));
 				postsaleBO.save(crmLogDetail);
 
-				System.out.println("ACTUALIZACI�N DE CAMPA�AS NO ATENDIDAS...");
+				System.out.println("ACTUALIZACIÓN DE CAMPAÑAS NO ATENDIDAS...");
 				crmLogDetail = new CrmLogDetail();
 				crmLogDetail.setCrmLog(crmLog);
 				crmLogDetail.setLogDate(currentDate);
 				crmLogDetail
-						.setMessage("ACTUALIZACI�N DE CAMAPA�AS NO ATENDIDAS");
+						.setMessage("ACTUALIZACIÓN�N DE CAMPAÑAS NO ATENDIDAS");
 				postsaleBO.save(crmLogDetail);
 				postsaleBO.updateCampaign(currentDateString);
 
@@ -228,7 +230,8 @@ public class Postsale {
 						"yyyy-MM-dd");
 
 				// Buscando fecha llamada x sucursal
-				List<CrmBranch> listCrmBranch = postsaleBO.getListBranchActive();
+				List<CrmBranch> listCrmBranch = postsaleBO
+						.getListBranchActive();
 				for (CrmBranch branch : listCrmBranch) {
 					Date callDate = currentDate;
 					boolean validate = true;
@@ -376,13 +379,15 @@ public class Postsale {
 							"yyyy-MM-dd");
 					CrmAppointment crmAppointment = postsaleBO.getAppointment(
 							row.getDocPatient(), rowInitDateString,
-							FacesUtil.formatDate(row.getDateBill(), "yyyy-MM-dd"),
-							row.getTypeBill());
+							FacesUtil.formatDate(row.getDateBill(),
+									"yyyy-MM-dd"), row.getTypeBill());
 
 					if (crmAppointment == null) {
-						rowInitDateString = FacesUtil.formatDate(
-								FacesUtil.addDaysToDate(row.getDateBill(), -30),
-								"yyyy-MM-dd");
+						rowInitDateString = FacesUtil
+								.formatDate(
+										FacesUtil.addDaysToDate(
+												row.getDateBill(), -30),
+										"yyyy-MM-dd");
 						crmAppointment = postsaleBO.getAppointment(row
 								.getDocPatient(), rowInitDateString, FacesUtil
 								.formatDate(row.getDateBill(), "yyyy-MM-dd"),
@@ -569,6 +574,45 @@ public class Postsale {
 						.setMessage("INSERTANDO REGISTROS REPORTE INFUNSIONSOFT: "
 								+ count);
 				postsaleBO.save(crmLogDetail);
+
+				crmLogDetail = new CrmLogDetail();
+				crmLogDetail.setCrmLog(crmLog);
+				crmLogDetail.setLogDate(currentDate);
+				crmLogDetail.setMessage("BUSCANDO CITAS INVALIDAS");
+				postsaleBO.save(crmLogDetail);
+
+				listDistinct = postsaleBO
+						.getListSapMedicationByLoadStateDistinct(processDateString);
+				for (CrmSapMedicationDistinct row : listDistinct) {
+					String rowInitDateString = FacesUtil.formatDate(
+							FacesUtil.addDaysToDate(row.getDateBill(), -3),
+							"yyyy-MM-dd");
+					CrmAppointment crmAppointment = postsaleBO
+							.getAppointmentNoAttended(row.getDocPatient(),
+									rowInitDateString, FacesUtil.formatDate(
+											row.getDateBill(), "yyyy-MM-dd"),
+									row.getTypeBill());
+
+					if (crmAppointment == null) {
+						rowInitDateString = FacesUtil
+								.formatDate(
+										FacesUtil.addDaysToDate(
+												row.getDateBill(), -30),
+										"yyyy-MM-dd");
+						crmAppointment = postsaleBO.getAppointmentNoAttended(
+								row.getDocPatient(), rowInitDateString,
+								FacesUtil.formatDate(row.getDateBill(),
+										"yyyy-MM-dd"), row.getTypeBill());
+					}
+
+					if (crmAppointment != null) {
+						crmAppointment.setInvalidStatus(true);
+						postsaleBO.save(crmAppointment);
+						postsaleBO.updateSapMedicationById(row.getIdBill(),
+								row.getTypeBill(), crmAppointment.getId(),
+								crmLog.getId());
+					}
+				}
 
 				System.out.println("PROCESO TERMINADO EXITOSAMENTE");
 				crmLogDetail = new CrmLogDetail();

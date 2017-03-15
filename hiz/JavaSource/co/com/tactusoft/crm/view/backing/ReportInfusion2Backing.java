@@ -18,6 +18,7 @@ public class ReportInfusion2Backing extends BaseBacking implements Serializable 
 
 	private static final long serialVersionUID = 1L;
 	private List<VwAppointment> list;
+	private int invalidApp;
 
 	public ReportInfusion2Backing() {
 		newAction();
@@ -31,6 +32,14 @@ public class ReportInfusion2Backing extends BaseBacking implements Serializable 
 		this.list = list;
 	}
 
+	public int getInvalidApp() {
+		return invalidApp;
+	}
+
+	public void setInvalidApp(int invalidApp) {
+		this.invalidApp = invalidApp;
+	}
+
 	public void newAction() {
 		listBranchSelected = null;
 		startDate = new Date();
@@ -40,7 +49,7 @@ public class ReportInfusion2Backing extends BaseBacking implements Serializable 
 	public void searchAction() {
 		// if (listStatus != null && listStatus.size() > 0) {
 		list = processService.getListAppointmentNoAttendetByDates(startDate,
-				endDate);
+				endDate, invalidApp);
 		// } else {
 		// String message = FacesUtil.getMessage("app_no_status");
 		// FacesUtil.addInfo(message);
@@ -49,7 +58,8 @@ public class ReportInfusion2Backing extends BaseBacking implements Serializable 
 
 	public void exportElastix() {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(",Nombres,Correo,Estado,Doctor,FechaHora,Procedimiento,Sucursal");
+		stringBuilder
+				.append(",Nombres,Correo,Estado,Doctor,FechaHora,Procedimiento,Sucursal,Con Factura sin HC");
 		stringBuilder.append(Constant.NEW_LINE);
 		for (VwAppointment row : list) {
 			if (!FacesUtil.isEmptyOrBlank(row.getPatCellNumber())
@@ -75,7 +85,13 @@ public class ReportInfusion2Backing extends BaseBacking implements Serializable 
 						+ ","
 						+ row.getStartAppointmentDate()
 						+ ","
-						+ row.getPrcDetName() + "," + row.getBranchName());
+						+ row.getPrcDetName()
+						+ ","
+						+ row.getBranchName()
+						+ ","
+						+ ((row.getInvalidStatus() != null && row
+								.getInvalidStatus().booleanValue()) ? "SI"
+								: "NO"));
 				stringBuilder.append(Constant.NEW_LINE);
 			}
 		}
