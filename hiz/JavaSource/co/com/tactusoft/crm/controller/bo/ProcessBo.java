@@ -63,6 +63,7 @@ import co.com.tactusoft.crm.model.entities.IndPatientAppointment;
 import co.com.tactusoft.crm.model.entities.IndRepurchase;
 import co.com.tactusoft.crm.model.entities.VwAppointment;
 import co.com.tactusoft.crm.model.entities.VwAppointmentAvg;
+import co.com.tactusoft.crm.model.entities.VwAppointmentRep5;
 import co.com.tactusoft.crm.model.entities.VwFirstDiagnosis;
 import co.com.tactusoft.crm.model.entities.VwMedicationSold;
 import co.com.tactusoft.crm.util.Constant;
@@ -2451,6 +2452,13 @@ public class ProcessBo implements Serializable {
 		return dao.find("from CrmInfunsion1 o where o.status in (" + status
 				+ ") and Date(o.eventDate) between '" + startDate + "' and '"
 				+ finishDate + "' AND eventType = 'REGISTRO_FORMULARIO'");
+	}
+	
+
+	public List<VwAppointmentRep5> getVwAppointmentRep5ByDates(String startDate,
+			String finishDate) {
+		return dao.find("from VwAppointmentRep5 o where Date(o.appDate1) between '" + startDate + "' and '"
+				+ finishDate + "' ORDER BY o.appDate1");
 	}
 
 	public List<CrmProcedureDetail> getDistinctProcedureDetailByBranch(

@@ -24,7 +24,7 @@ import co.com.tactusoft.crm.model.entities.VwMedication;
 import co.com.tactusoft.crm.model.entities.sap.SapMedication;
 import co.com.tactusoft.crm.postsale.bo.PostsaleBO;
 import co.com.tactusoft.crm.postsale.bo.SapBO;
-import co.com.tactusoft.crm.postsale.util.Utils;
+import co.com.tactusoft.crm.postsale.util.FacesUtil;
 
 public class PrincipalMedication {
 
@@ -91,21 +91,21 @@ public class PrincipalMedication {
 					.getListSapMedicationByLoadStateDistinct();
 			count = 0;
 			for (CrmSapMedicationDistinct row : listDistinct) {
-				String rowInitDateString = Utils.formatDate(
-						Utils.addDaysToDate(row.getDateBill(), -3),
+				String rowInitDateString = FacesUtil.formatDate(
+						FacesUtil.addDaysToDate(row.getDateBill(), -3),
 						"yyyy-MM-dd");
 				CrmAppointment crmAppointment = processBO.getAppointment(
 						row.getDocPatient(), rowInitDateString,
-						Utils.formatDate(row.getDateBill(), "yyyy-MM-dd"),
+						FacesUtil.formatDate(row.getDateBill(), "yyyy-MM-dd"),
 						row.getTypeBill());
 
 				if (crmAppointment == null) {
-					rowInitDateString = Utils.formatDate(
-							Utils.addDaysToDate(row.getDateBill(), -30),
+					rowInitDateString = FacesUtil.formatDate(
+							FacesUtil.addDaysToDate(row.getDateBill(), -30),
 							"yyyy-MM-dd");
 					crmAppointment = processBO.getAppointment(
 							row.getDocPatient(), rowInitDateString,
-							Utils.formatDate(row.getDateBill(), "yyyy-MM-dd"),
+							FacesUtil.formatDate(row.getDateBill(), "yyyy-MM-dd"),
 							row.getTypeBill());
 				}
 

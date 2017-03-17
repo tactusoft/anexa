@@ -106,14 +106,14 @@ public class InfunsionSoft {
 		XmlRpcClient client = getClient();
 		String contactId = InfunsionSoft.getContactId(email);
 		Boolean success = null;
-		if (!Utils.isEmptyOrBlank(contactId)) {
+		if (!FacesUtil.isEmptyOrBlank(contactId)) {
 			List<Object> parameters = new ArrayList<>();
 			Map<String, String> contactData = new HashMap<String, String>();
-			contactData.put("_Fechadecita", Utils.formatDate(date, "yyyMMdd"));
-			contactData.put("_Horadecita", Utils.formatDate(date, "HH:mm"));
+			contactData.put("_Fechadecita", FacesUtil.formatDate(date, "yyyMMdd"));
+			contactData.put("_Horadecita", FacesUtil.formatDate(date, "HH:mm"));
 			contactData.put("_Clinicas", branch);
 			contactData.put("_Direcciondecita",
-					Utils.isEmptyOrBlank(address) ? branch : address);
+					FacesUtil.isEmptyOrBlank(address) ? branch : address);
 
 			parameters = new ArrayList<>();
 			parameters.add(KEY); // The secure key
@@ -138,7 +138,7 @@ public class InfunsionSoft {
 			throws MalformedURLException, XmlRpcException {
 		String contactId = InfunsionSoft.getContactId(email);
 		Boolean success = false;
-		if (!Utils.isEmptyOrBlank(contactId)) {
+		if (!FacesUtil.isEmptyOrBlank(contactId)) {
 			removeTag(contactId, TAG_APPOINTMENT);
 			removeTag(contactId, TAG_NO_ATTENDET);
 			addTag(contactId, TAG_NO_ATTENDET);
@@ -187,7 +187,7 @@ public class InfunsionSoft {
 			throws MalformedURLException, XmlRpcException {
 		String contactId = InfunsionSoft.getContactId(email);
 		Boolean success = false;
-		if (!Utils.isEmptyOrBlank(contactId)) {
+		if (!FacesUtil.isEmptyOrBlank(contactId)) {
 			removeTag(contactId, TAG_START_MEDICATION);
 			removeTag(contactId, TAG_NO_START_MEDICATION);
 			addTag(contactId, TAG_NO_START_MEDICATION);
@@ -213,7 +213,7 @@ public class InfunsionSoft {
 		Map<String, Object> queryData = new HashMap<String, Object>();
 		queryData.put("GroupId", groupIds);
 		queryData.put("DateCreated",
-				Utils.formatDate(dateCreated, "yyyy-MM-dd") + "%");
+				FacesUtil.formatDate(dateCreated, "yyyy-MM-dd") + "%");
 		// queryData.put("DateCreated", "~>=~20170201");
 
 		List<Object> parameters = new ArrayList<>();
@@ -231,7 +231,7 @@ public class InfunsionSoft {
 			Map<?, ?> contact = (Map<?, ?>) contact1;
 			Object email = contact.get("Contact.Email");
 			if (email != null) {
-				Date date = Utils.stringTOSDateEN(contact.get("DateCreated")
+				Date date = FacesUtil.stringTOSDateEN(contact.get("DateCreated")
 						.toString(), "EEEE MMM dd HH:mm:ss ZZZ yyyy");
 
 				String names = "";
@@ -321,9 +321,10 @@ public class InfunsionSoft {
 			}*/
 			
 			List<Integer> ids = new ArrayList<Integer>();
-			ids.add(1262);
+			ids.add(1374);
+			ids.add(1380);
 			
-			Date date = Utils.stringTOSDate("27/02/2017", "dd/MM/yyyy");
+			Date date = FacesUtil.stringTOSDate("15/03/2017", "dd/MM/yyyy");
 			
 			List<InfusionEntity> formsList = InfunsionSoft.getContactsByGroup(
 					ids, date);

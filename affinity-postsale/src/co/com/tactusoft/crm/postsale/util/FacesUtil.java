@@ -7,7 +7,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public class Utils {
+public class FacesUtil {
 
 	public static String formatDate(Date date, String format) {
 		String stringDate = null;

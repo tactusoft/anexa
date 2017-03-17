@@ -9,7 +9,7 @@ import com.tactusoft.webservice.client.execute.SugarWS;
 
 import co.com.tactusoft.crm.model.entities.CrmPatient;
 import co.com.tactusoft.crm.postsale.bo.VTigerBO;
-import co.com.tactusoft.crm.postsale.util.Utils;
+import co.com.tactusoft.crm.postsale.util.FacesUtil;
 
 public class VTiger {
 
@@ -33,7 +33,7 @@ public class VTiger {
 				String country = row.getCrmCity() != null ? row.getCrmCity()
 						.getCrmRegion().getCrmCountry().getName() : null;
 
-				if (Utils.isEmptyOrBlank(row.getDoc())
+				if (FacesUtil.isEmptyOrBlank(row.getDoc())
 						|| row.getDoc().equals(row.getCodeSap())) {
 					createSugarContact.createLead(row.getId().intValue(),
 							row.getDoc(), row.getSurnames(), row.getNames(),

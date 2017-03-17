@@ -27,7 +27,7 @@ import co.com.tactusoft.crm.model.entities.CrmUser;
 import co.com.tactusoft.crm.model.entities.VwAppointmentMedication;
 import co.com.tactusoft.crm.model.entities.VwMedication;
 import co.com.tactusoft.crm.model.util.FacesUtilModel;
-import co.com.tactusoft.crm.postsale.util.Utils;
+import co.com.tactusoft.crm.postsale.util.FacesUtil;
 
 @Service
 public class PostsaleBO implements Serializable {
@@ -324,8 +324,8 @@ public class PostsaleBO implements Serializable {
 	public int getLogLastDay(Date currentDate) {
 		CrmLog lastLog = (CrmLog) dao.find(
 				"FROM CrmLog o WHERE id = (SELECT MAX(id) FROM CrmLog)").get(0);
-		Date today = Utils.getDateWithoutTime(currentDate);
-		Date lastDate = Utils.getDateWithoutTime(lastLog.getLogDate());
+		Date today = FacesUtil.getDateWithoutTime(currentDate);
+		Date lastDate = FacesUtil.getDateWithoutTime(lastLog.getLogDate());
 		long diff = Math.abs(today.getTime() - lastDate.getTime());
 		Long diffDays = diff / (24 * 60 * 60 * 1000);
 		return diffDays.intValue();

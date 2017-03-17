@@ -184,30 +184,31 @@ public class InfunsionSoft {
 
 	public static String getContactId(String email)
 			throws MalformedURLException, XmlRpcException {
-		XmlRpcClient client = getClient();
-
-		List<Object> fields = new ArrayList<>(); // What fields we will be
-													// selecting
-		fields.add("Id");
-
-		List<Object> parameters = new ArrayList<>();
-		parameters.add(KEY); // Secure key
-		parameters.add("Contact"); // What table we are looking in
-		parameters.add(50); // How many records to return
-		parameters.add(0); // Which page of results to display
-		parameters.add("email"); // The field we are querying on
-		parameters.add(email); // THe data to query on
-		parameters.add(fields); // what fields to select on return
-
 		String contactId = null;
-		Object[] contacts = (Object[]) client.execute(
-				"DataService.findByField", parameters);
-		for (Object contact1 : contacts) {
-			// Each item in the array is a struct
-			Map<?, ?> contact = (Map<?, ?>) contact1;
-			System.out.println("InfusionSoft1: " + contact.get("Id"));
-			contactId = contact.get("Id").toString();
-			break;
+		if (!FacesUtil.isEmptyOrBlank(email)) {
+			XmlRpcClient client = getClient();
+
+			List<Object> fields = new ArrayList<>();
+			fields.add("Id");
+
+			List<Object> parameters = new ArrayList<>();
+			parameters.add(KEY); // Secure key
+			parameters.add("Contact"); // What table we are looking in
+			parameters.add(50); // How many records to return
+			parameters.add(0); // Which page of results to display
+			parameters.add("email"); // The field we are querying on
+			parameters.add(email); // THe data to query on
+			parameters.add(fields); // what fields to select on return
+
+			Object[] contacts = (Object[]) client.execute(
+					"DataService.findByField", parameters);
+			for (Object contact1 : contacts) {
+				// Each item in the array is a struct
+				Map<?, ?> contact = (Map<?, ?>) contact1;
+				System.out.println("InfusionSoft1: " + contact.get("Id"));
+				contactId = contact.get("Id").toString();
+				break;
+			}
 		}
 		return contactId;
 	}
@@ -575,9 +576,10 @@ public class InfunsionSoft {
 			 */
 
 			List<Integer> ids = new ArrayList<Integer>();
-			ids.add(1360);
+			ids.add(1374);
+			ids.add(1380);
 
-			Date date = FacesUtil.stringTOSDate("22/02/2017", "dd/MM/yyyy");
+			Date date = FacesUtil.stringTOSDate("15/03/2017", "dd/MM/yyyy");
 
 			List<InfusionEntity> formsList = InfunsionSoft.getContactsByGroup(
 					ids, date);

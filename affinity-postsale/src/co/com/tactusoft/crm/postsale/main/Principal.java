@@ -39,7 +39,7 @@ import co.com.tactusoft.crm.postsale.bo.PostsaleBO;
 import co.com.tactusoft.crm.postsale.bo.SapBO;
 import co.com.tactusoft.crm.postsale.util.InfunsionSoft;
 import co.com.tactusoft.crm.postsale.util.InfusionEntity;
-import co.com.tactusoft.crm.postsale.util.Utils;
+import co.com.tactusoft.crm.postsale.util.FacesUtil;
 
 public class Principal {
 
@@ -105,9 +105,9 @@ public class Principal {
 	public void execute() {
 		System.out.println("INCIANDO PROCESO...");
 		Date currentDate = new Date();
-		currentDate = Utils.stringTOSDate("10/03/2017 21", "dd/MM/yyyy HH");
+		currentDate = FacesUtil.stringTOSDate("10/03/2017 21", "dd/MM/yyyy HH");
 
-		String currentDateString = Utils.formatDate(currentDate, "yyyy-MM-dd");
+		String currentDateString = FacesUtil.formatDate(currentDate, "yyyy-MM-dd");
 		CrmLogDetail crmLogDetail = new CrmLogDetail();
 
 		try {
@@ -122,9 +122,9 @@ public class Principal {
 
 			if (numDays > 0) {
 				numDays--;
-				Date processDate = Utils.addDaysToDate(currentDate, numDays
+				Date processDate = FacesUtil.addDaysToDate(currentDate, numDays
 						* -1);
-				String processDateString = Utils.formatDate(processDate,
+				String processDateString = FacesUtil.formatDate(processDate,
 						"yyyy-MM-dd");
 
 				mapCampaign = new HashMap<BigDecimal, CrmCampaign>();
@@ -205,26 +205,26 @@ public class Principal {
 				processBO.save(crmLogDetail);
 				processBO.updateCampaign(currentDateString);
 
-				int currentDay = Utils.getCurrentDay(currentDate);
+				int currentDay = FacesUtil.getCurrentDay(currentDate);
 
 				Date yesterdayDate = null;
 				int yesterday = currentDay - 1;
 				if (yesterday != 1) {
-					yesterdayDate = Utils.addDaysToDate(currentDate, -1);
+					yesterdayDate = FacesUtil.addDaysToDate(currentDate, -1);
 				} else {
-					yesterdayDate = Utils.addDaysToDate(currentDate, -2);
+					yesterdayDate = FacesUtil.addDaysToDate(currentDate, -2);
 				}
-				String yesterdayString = Utils.formatDate(yesterdayDate,
+				String yesterdayString = FacesUtil.formatDate(yesterdayDate,
 						"yyyy-MM-dd");
 
 				Date tomorrowDate = null;
 				int tomorrow = currentDay + 2;
 				if (tomorrow != 1) {
-					tomorrowDate = Utils.addDaysToDate(currentDate, 2);
+					tomorrowDate = FacesUtil.addDaysToDate(currentDate, 2);
 				} else {
-					tomorrowDate = Utils.addDaysToDate(currentDate, 3);
+					tomorrowDate = FacesUtil.addDaysToDate(currentDate, 3);
 				}
-				String tomorrowString = Utils.formatDate(tomorrowDate,
+				String tomorrowString = FacesUtil.formatDate(tomorrowDate,
 						"yyyy-MM-dd");
 
 				// Buscando fecha llamada x sucursal
@@ -233,13 +233,13 @@ public class Principal {
 					Date callDate = currentDate;
 					boolean validate = true;
 					do {
-						callDate = Utils.addDaysToDate(callDate, 1);
-						int day = Utils.getCurrentDay(callDate);
+						callDate = FacesUtil.addDaysToDate(callDate, 1);
+						int day = FacesUtil.getCurrentDay(callDate);
 						if (day != 1
 								&& processBO.getListHoliday(callDate,
 										branch.getId()).isEmpty()) {
 							mapCallDates.put(branch.getId(),
-									Utils.getDateWithoutTime(callDate));
+									FacesUtil.getDateWithoutTime(callDate));
 							validate = false;
 							break;
 						}
@@ -249,7 +249,7 @@ public class Principal {
 				System.out.println("ACTUALIZANDO CITAS...");
 				// ACTUALIZAR TODAS LAS CITAS QUE NO FUERON ATENDIDAS
 
-				if (Utils.getCurrentHour(currentDate) >= 20) {
+				if (FacesUtil.getCurrentHour(currentDate) >= 20) {
 					processBO.updateAppointment(currentDateString);
 				} else {
 					processBO.updateAppointment(yesterdayString);
@@ -339,8 +339,8 @@ public class Principal {
 				System.out
 						.println("BUSCANDO PACIENTES CON MAS DE 25 DIAS SIN CITA CONTROL");
 
-				Date ago25Date = Utils.addDaysToDate(currentDate, -25);
-				String ago25DateString = Utils.formatDate(ago25Date,
+				Date ago25Date = FacesUtil.addDaysToDate(currentDate, -25);
+				String ago25DateString = FacesUtil.formatDate(ago25Date,
 						"yyyy-MM-dd");
 				List<CrmAppointment> listControl = processBO
 						.getListAppointmentControl(ago25DateString);
@@ -371,20 +371,20 @@ public class Principal {
 						.getListSapMedicationByLoadStateDistinct(processDateString);
 				count = 0;
 				for (CrmSapMedicationDistinct row : listDistinct) {
-					String rowInitDateString = Utils.formatDate(
-							Utils.addDaysToDate(row.getDateBill(), -3),
+					String rowInitDateString = FacesUtil.formatDate(
+							FacesUtil.addDaysToDate(row.getDateBill(), -3),
 							"yyyy-MM-dd");
 					CrmAppointment crmAppointment = processBO.getAppointment(
 							row.getDocPatient(), rowInitDateString,
-							Utils.formatDate(row.getDateBill(), "yyyy-MM-dd"),
+							FacesUtil.formatDate(row.getDateBill(), "yyyy-MM-dd"),
 							row.getTypeBill());
 
 					if (crmAppointment == null) {
-						rowInitDateString = Utils.formatDate(
-								Utils.addDaysToDate(row.getDateBill(), -30),
+						rowInitDateString = FacesUtil.formatDate(
+								FacesUtil.addDaysToDate(row.getDateBill(), -30),
 								"yyyy-MM-dd");
 						crmAppointment = processBO.getAppointment(row
-								.getDocPatient(), rowInitDateString, Utils
+								.getDocPatient(), rowInitDateString, FacesUtil
 								.formatDate(row.getDateBill(), "yyyy-MM-dd"),
 								row.getTypeBill());
 					}
@@ -505,10 +505,10 @@ public class Principal {
 						.getListCrmInfunsion1(currentDateString);
 				count = 0;
 				for (CrmInfunsion1 row : listCrmInfunsion1) {
-					String startDate = Utils.formatDate(row.getEventDate(),
+					String startDate = FacesUtil.formatDate(row.getEventDate(),
 							"yyyy-MM-dd");
-					String endDate = Utils.formatDate(
-							Utils.addDaysToDate(row.getEventDate(), 1),
+					String endDate = FacesUtil.formatDate(
+							FacesUtil.addDaysToDate(row.getEventDate(), 1),
 							"yyyy-MM-dd");
 					CrmAppointment crmAppointment = processBO
 							.getAppointmentByEmail(row.getEmail(), startDate,
