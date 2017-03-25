@@ -68,7 +68,10 @@ public class RepAppointmentRep5Backing extends BaseBacking implements
 				stringBuilder.append(Constant.NEW_LINE);
 			}
 		}
-		FacesUtil.exportStringBuilder(stringBuilder);
+		String nameFile = "NOASISTIDA_"
+				+ FacesUtil.formatDate(startDate, "yyyyMMdd") + "_"
+				+ FacesUtil.formatDate(endDate, "yyyyMMdd");
+		FacesUtil.exportStringBuilder(nameFile, stringBuilder);
 		FacesUtil.addInfo("Archivo generados exitosamente");
 	}
 

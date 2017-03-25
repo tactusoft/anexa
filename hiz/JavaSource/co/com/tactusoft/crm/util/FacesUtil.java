@@ -777,9 +777,10 @@ public class FacesUtil {
 		return items;
 	}
 
-	public static void exportStringBuilder(StringBuilder stringBuilder) {
+	public static void exportStringBuilder(String nameFile,
+			StringBuilder stringBuilder) {
 		try {
-			String filename = "elastix.csv";
+			String filename = nameFile + ".txt";
 
 			FacesContext fc = FacesContext.getCurrentInstance();
 			HttpServletResponse response = (HttpServletResponse) fc
@@ -865,7 +866,7 @@ public class FacesUtil {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static int getCurrentDay(Date currentDate) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(currentDate);
@@ -879,7 +880,7 @@ public class FacesUtil {
 		int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
 		return currentHour;
 	}
-	
+
 	public static Date stringTOSDateEN(String strDate, String format) {
 		SimpleDateFormat formatoDelTexto = new SimpleDateFormat(format,
 				Locale.ENGLISH);

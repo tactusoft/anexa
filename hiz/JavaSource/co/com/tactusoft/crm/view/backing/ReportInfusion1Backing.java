@@ -68,8 +68,11 @@ public class ReportInfusion1Backing extends BaseBacking implements Serializable 
 				stringBuilder.append(Constant.NEW_LINE);
 			}
 		}
-		FacesUtil.exportStringBuilder(stringBuilder);
+
+		String nameFile = "REGSINCITA_"
+				+ FacesUtil.formatDate(startDate, "yyyyMMdd") + "_"
+				+ FacesUtil.formatDate(endDate, "yyyyMMdd");
+		FacesUtil.exportStringBuilder(nameFile, stringBuilder);
 		FacesUtil.addInfo("Archivo generados exitosamente");
 	}
-
 }
