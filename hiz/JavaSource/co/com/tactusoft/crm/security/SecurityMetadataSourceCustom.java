@@ -27,8 +27,8 @@ public class SecurityMetadataSourceCustom implements
 					|| url.contains(".css") || url.contains(".png")
 					|| url.contains(".jpg") || url.contains(".gif")
 					|| url.contains(".swf") || url.contains("script.js")
-					|| url.contains("SigWeb")
-					|| url.contains("index.jsp") || url.contains("Include")) {
+					|| url.contains("SigWeb") || url.contains("index.jsp")
+					|| url.contains("Include")) {
 				return null;
 			}
 
@@ -41,7 +41,7 @@ public class SecurityMetadataSourceCustom implements
 						|| (url.contains("appointmentEdit"))
 						|| (url.contains("Odontology"))
 						|| (url.contains("Consultant"))
-						|| (url.contains("pdf"))) {
+						|| (url.contains("pdf") || (url.contains("call")))) {
 					return null;
 				}
 			}

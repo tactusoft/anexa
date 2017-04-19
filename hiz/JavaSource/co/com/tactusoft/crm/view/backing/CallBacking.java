@@ -258,9 +258,8 @@ public class CallBacking extends ContactBacking {
 
 			if (listCrmPatient.size() > 0) {
 				if (listCrmPatient.size() == 1) {
-					patientGridType = 0;
-					this.setSelectedPatient(listCrmPatient.get(0));
-					generateRegion(this.getSelectedPatient().getIdCountry());
+					this.setSelectedPatientTemp(listCrmPatient.get(0));
+					this.addContactAction(null);
 				} else {
 					patientGridType = 1;
 					this.setListPatient(listCrmPatient);
@@ -291,7 +290,13 @@ public class CallBacking extends ContactBacking {
 	public void addContactAction(ActionEvent event) {
 		this.setSelectedPatient(this.getSelectedPatientTemp());
 		patientGridType = 0;
-		generateRegion(this.getSelectedPatient().getIdCountry());
+		generateRegionExisting(this.getSelectedPatient().getIdCountry(), this
+				.getSelectedPatientTemp().getIdRegion(), this
+				.getSelectedPatientTemp().getIdCity());
+		EventsHistorialBacking eventsHistorialBacking = FacesUtil
+				.findBean("eventsHistorialBacking");
+		eventsHistorialBacking.setSelectedPatient(this.selectedPatient);
+		eventsHistorialBacking.searchAction();
 	}
 
 	private void generateCallType() {
@@ -357,6 +362,29 @@ public class CallBacking extends ContactBacking {
 			listRegion = new LinkedList<SelectItem>();
 			listCity = new LinkedList<SelectItem>();
 		}
+	}
+
+	private void generateRegionExisting(BigDecimal idCountry,
+			BigDecimal idRegionExisting, BigDecimal idCityExisting) {
+		listRegion = new ArrayList<SelectItem>();
+		mapRegion = new HashMap<BigDecimal, CrmRegion>();
+
+		for (CrmRegion row : this.listAllRegion) {
+			if (row.getCrmCountry().getId().intValue() == idCountry.intValue()) {
+				listRegion.add(new SelectItem(row.getId(), row.getName()));
+				mapRegion.put(row.getId(), row);
+			}
+		}
+
+		this.setIdCountry(idCountry);
+		this.setListRegion(listRegion);
+		this.setMapRegion(mapRegion);
+		this.setListAllCity(listAllCity);
+
+		this.setIdRegion(idRegionExisting);
+		this.handleRegionChange();
+		this.setIdCity(idCityExisting);
+
 	}
 
 	private void generateDocType(String codCountry) {

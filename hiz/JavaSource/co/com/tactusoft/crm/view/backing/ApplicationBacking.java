@@ -17,7 +17,6 @@ import com.tactusoft.webservice.client.beans.WSBean;
 public class ApplicationBacking {
 
 	private Date currentDate;
-	//private List<WSBean> listBranchs;
 	private List<WSBean> listGroupSellers;
 	private List<CrmMaterial> listMaterials;
 	private List<WSBean> listDocTypes;
@@ -30,14 +29,6 @@ public class ApplicationBacking {
 	public void setCurrentDate(Date currentDate) {
 		this.currentDate = currentDate;
 	}
-
-	/*public List<WSBean> getListBranchs() {
-		return listBranchs;
-	}
-
-	public void setListBranchs(List<WSBean> listBranchs) {
-		this.listBranchs = listBranchs;
-	}*/
 
 	public List<WSBean> getListGroupSellers() {
 		return listGroupSellers;
