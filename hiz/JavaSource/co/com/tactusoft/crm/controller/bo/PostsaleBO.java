@@ -246,6 +246,22 @@ public class PostsaleBO implements Serializable {
 		return result;
 	}
 
+	public CrmAppointment getAppointmentByEmailAndPhone(String email,
+			String phone, String initDate, String endDate) {
+		List<CrmAppointment> list = dao.find(
+				"FROM CrmAppointment o WHERE (o.crmPatient.email = '" + email
+						+ "' OR o.crmPatient.phoneNumber = '" + phone
+						+ "' OR o.crmPatient.cellNumber = '" + phone
+						+ "') AND Date(o.dateCreate) BETWEEN '" + initDate
+						+ "' AND '" + endDate + "' ORDER BY o.dateCreate DESC",
+				1);
+		CrmAppointment result = null;
+		if (list.size() > 0) {
+			result = list.get(0);
+		}
+		return result;
+	}
+
 	public List<CrmSapMedication> getListSapMedicationByAppointment(
 			BigDecimal idAppointment) {
 		return dao.find("FROM CrmSapMedication o WHERE o.idAppointment = "

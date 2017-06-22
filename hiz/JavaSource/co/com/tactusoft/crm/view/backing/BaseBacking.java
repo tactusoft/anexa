@@ -1488,8 +1488,7 @@ public class BaseBacking implements Serializable {
 
 		if (submit != null && submit.length > 0) {
 
-			List<CrmProcedureDetail> listCrmProcedureDetails = processService
-					.getDistinctProcedureDetailByBranch(submit);
+			List<CrmProcedureDetail> listCrmProcedureDetails = tablesService.getListProcedureDetail();
 			for (CrmProcedureDetail row : listCrmProcedureDetails) {
 				listProcedure.add(new SelectItem(row.getId(), row.getName()));
 			}

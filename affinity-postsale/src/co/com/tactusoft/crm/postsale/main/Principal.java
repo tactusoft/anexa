@@ -105,7 +105,7 @@ public class Principal {
 	public void execute() {
 		System.out.println("INCIANDO PROCESO...");
 		Date currentDate = new Date();
-		currentDate = FacesUtil.stringTOSDate("10/03/2017 21", "dd/MM/yyyy HH");
+		currentDate = FacesUtil.stringTOSDate("15/06/2017 21", "dd/MM/yyyy HH");
 
 		String currentDateString = FacesUtil.formatDate(currentDate, "yyyy-MM-dd");
 		CrmLogDetail crmLogDetail = new CrmLogDetail();

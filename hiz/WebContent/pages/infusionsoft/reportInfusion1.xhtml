@@ -60,6 +60,8 @@
 
 				<p:dataTable id="recordTable" var="rec"
 					value="#{reportInfusion1Backing.list}" paginator="true" rows="20"
+					paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					currentPageReportTemplate="#{msg['msg_total_records']} {totalRecords}"
 					style="width:100%" emptyMessage="#{msg['glb_no_records_found']}">
 
 					<p:column filterBy="phone" filterMatchMode="contains">

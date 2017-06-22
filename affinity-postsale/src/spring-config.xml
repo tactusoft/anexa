@@ -18,9 +18,9 @@
 	<bean id="dataSourceDefault" class="com.mchange.v2.c3p0.ComboPooledDataSource"
 		destroy-method="close">
 		<property name="driverClass" value="com.mysql.jdbc.Driver" />
-		<property name="jdbcUrl" value="jdbc:mysql://192.168.1.78/crm_db" />
-		<property name="user" value="crmapp" />
-		<property name="password" value="lukro9753" />
+		<property name="jdbcUrl" value="jdbc:mysql://rds-aportar.c3evlxyrnoia.us-east-1.rds.amazonaws.com/crm_db" />
+		<property name="user" value="aportardb" />
+		<property name="password" value="Aportar100%" />
 		<property name="minPoolSize" value="5" />
 		<property name="maxPoolSize" value="10" />
 		<property name="acquireIncrement" value="1" />

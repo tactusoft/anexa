@@ -411,7 +411,13 @@ public class CallBacking extends ContactBacking {
 
 	public void new2Action(ActionEvent event) {
 		super.newAction(event);
-		this.getSelectedPatient().setPhoneNumber(phone);
+		if (!FacesUtil.isEmptyOrBlank(phone)) {
+			if (phone.length() == 7) {
+				this.getSelectedPatient().setPhoneNumber(phone);
+			} else if (phone.length() == 10) {
+				this.getSelectedPatient().setCellNumber(phone);
+			}
+		}
 		this.getSelectedPatient().setCrmProfile(profile);
 
 		generateRegion(crmGuideline.getIdCountry());

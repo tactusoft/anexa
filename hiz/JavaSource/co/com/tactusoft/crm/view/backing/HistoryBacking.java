@@ -1973,7 +1973,7 @@ public class HistoryBacking extends BaseBacking {
 
 	public void selectMedicationAction() {
 		this.typeMedication = Constant.MATERIAL_TYPE_MEDICINE;
-		if (listMaterial.size() == 0) {
+		//if (listMaterial.size() == 0) {
 			listAllMaterial = new ArrayList<CrmMaterial>();
 			for (CrmMaterial material : listAllBackupMaterial) {
 				boolean validateGroup = false;
@@ -1990,7 +1990,7 @@ public class HistoryBacking extends BaseBacking {
 					listAllMaterial.add(material);
 				}
 			}
-		}
+		//}
 
 		refreshListMedication();
 		refreshMaterialFields();

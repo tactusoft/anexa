@@ -516,8 +516,8 @@ public class Postsale {
 							FacesUtil.addDaysToDate(row.getEventDate(), 1),
 							"yyyy-MM-dd");
 					CrmAppointment crmAppointment = postsaleBO
-							.getAppointmentByEmail(row.getEmail(), startDate,
-									endDate);
+							.getAppointmentByEmailAndPhone(row.getEmail(),
+									row.getPhone(), startDate, endDate);
 					if (crmAppointment != null) {
 						row.setStatus(1);
 						row.setCrmAppointment(crmAppointment);

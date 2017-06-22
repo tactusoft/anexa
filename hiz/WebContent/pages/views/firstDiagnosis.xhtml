@@ -57,6 +57,8 @@
 						value="#{firstDiagnosisBacking.list}" rowKey="#{rec.code}"
 						style="width:100%;" paginator="true" rows="20"
 						resizableColumns="true"
+						paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+						currentPageReportTemplate="#{msg['msg_total_records']} {totalRecords}"
 						emptyMessage="#{msg['glb_no_records_found']}">
 
 						<p:column filterBy="idCie" filterMatchMode="contains" width="20%">
@@ -131,16 +133,16 @@
 						<h:commandLink>
 							<p:graphicImage id="imgExcel" value="../../images/excel.png"
 								alt="Excel" />
-							<p:dataExporter type="xls"
-								target="selectedTable" fileName="indicador" />
+							<p:dataExporter type="xls" target="selectedTable"
+								fileName="indicador" />
 							<p:tooltip for="imgExcel" value="#{msg['btn_export_excel']}"
 								showEffect="fade" hideEffect="fade" />
 						</h:commandLink>
 
 						<h:commandLink>
 							<p:graphicImage id="imgCSV" value="../../images/csv.png" />
-							<p:dataExporter type="csv"
-								target="selectedTable" fileName="indicador" />
+							<p:dataExporter type="csv" target="selectedTable"
+								fileName="indicador" />
 							<p:tooltip for="imgCSV" value="#{msg['btn_export_csv']}"
 								showEffect="fade" hideEffect="fade" />
 						</h:commandLink>
